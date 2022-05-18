@@ -93,7 +93,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
      * {@inheritDoc}
      */
     @Override
-    public void start() throws ConnectorCheckedException {
+    synchronized public void start() throws ConnectorCheckedException {
 
         super.start();
 
