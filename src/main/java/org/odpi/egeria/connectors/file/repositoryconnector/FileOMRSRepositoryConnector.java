@@ -269,7 +269,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
      * @param methodName the method attempting to connect
      * @throws RepositoryErrorException if there is any issue connecting
      */
-    private void connectToFolder(String methodName) throws RepositoryErrorException {
+    synchronized private void connectToFolder(String methodName) throws RepositoryErrorException {
         EndpointProperties endpointProperties = connectionProperties.getEndpoint();
         if (endpointProperties == null) {
             raiseRepositoryErrorException(FileOMRSErrorCode.FOLDER_NOT_SUPPLIED_IN_CONFIG, methodName, null, "null");
