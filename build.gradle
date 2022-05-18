@@ -39,6 +39,7 @@ ext {
     jacksonVersion = '2.13.2'
     jupiterVersion = '5.8.2'
     httpclientVersion = '4.5.13'
+    springwebVersion = '5.3.19'
 }
 
 // For a single module, add here. For multiple modules, refactor and use constraints (see main egeria build.gradle for an example)
@@ -53,7 +54,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    implementation "org.springframework:spring-core:${egeriaversion}"
+    implementation "org.springframework:spring-core:${springwebVersion}"
     implementation "org.junit.jupiter:junit-jupiter:${jupiterVersion}"
     implementation "org.odpi.egeria:open-connector-framework:${egeriaversion}"
     implementation "org.odpi.egeria:open-metadata-types:${egeriaversion}"
