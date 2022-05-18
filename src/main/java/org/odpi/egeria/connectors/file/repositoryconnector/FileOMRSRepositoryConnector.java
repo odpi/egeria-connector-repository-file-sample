@@ -79,6 +79,22 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     }
 
     /**
+     * get folder location - synchronised as there is multithreaded access
+     * @return folder location as a string
+     */
+    synchronized public String getFolderLocation() {
+        return folderLocation;
+    }
+
+    /**
+     * set folder location - synchronised as there is multithreaded access
+     * @param folderLocation location of the folder
+     */
+    synchronized public void setFolderLocation(String folderLocation) {
+        this.folderLocation = folderLocation;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -126,7 +142,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
     public void refreshRepository() throws ConnectorCheckedException {
         String methodName = "refreshRepository";
-        File folder = new File(this.folderLocation);
+        File folder = new File(getFolderLocation());
 
         if(!folder.exists()){
             raiseConnectorCheckedException(FileOMRSErrorCode.FOLDER_DOES_NOT_EXIST, methodName, null, folder.getName());
@@ -261,7 +277,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
         if (endpointProperties == null) {
             raiseRepositoryErrorException(FileOMRSErrorCode.FOLDER_NOT_SUPPLIED_IN_CONFIG, methodName, null, "null");
         } else {
-            this.folderLocation = endpointProperties.getAddress();
+            setFolderLocation(endpointProperties.getAddress());
             metadataCollection = new FileOMRSMetadataCollection(this,
                                                                 serverName,
                                                                 repositoryHelper,
@@ -269,8 +285,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                                                                 metadataCollectionId,
                                                                 supportedAttributeTypeNames,
                                                                 supportedTypeNames,
-                                                                auditLog,
-                                                                folderLocation
+                                                                auditLog
 
             );
         }

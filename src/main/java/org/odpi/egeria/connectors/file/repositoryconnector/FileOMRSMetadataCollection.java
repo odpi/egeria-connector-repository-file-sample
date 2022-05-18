@@ -45,8 +45,6 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
 
     private final SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-//    private String folderLocation = null;
-
     OMRSMetadataCollection embeddedMetadataCollection = null;
 
     /**
@@ -60,7 +58,6 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
      * @param supportedAttributeTypeNames supported attribute type names
      * @param supportedTypeNames   supported type names
      * @param auditLog             audit log
-     * @param folderLocation       folder location
      *
      * @throws RepositoryErrorException RepositoryErrorException error occured in the repository
      */
@@ -72,8 +69,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
                                       String metadataCollectionId,
                                       List<String> supportedAttributeTypeNames,
                                       List<String> supportedTypeNames,
-                                      AuditLog auditLog,
-                                      String folderLocation) throws  RepositoryErrorException {
+                                      AuditLog auditLog) throws  RepositoryErrorException {
         super(parentConnector,
               repositoryName,
               repositoryHelper,
@@ -82,7 +78,6 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
               supportedAttributeTypeNames,
               supportedTypeNames);
 
-//        this.folderLocation = folderLocation;
         this.metadataCollectionId = metadataCollectionId;
         try {
             OMRSRepositoryConnector embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper,
