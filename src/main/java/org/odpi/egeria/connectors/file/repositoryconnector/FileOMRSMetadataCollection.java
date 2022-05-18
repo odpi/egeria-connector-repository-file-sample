@@ -63,6 +63,8 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
      * @param supportedTypeNames   supported type names
      * @param auditLog             audit log
      * @param folderLocation       folder location
+     *
+     * @throws RepositoryErrorException RepositoryErrorException error occured in the repository
      */
 
     public FileOMRSMetadataCollection(FileOMRSRepositoryConnector parentConnector,

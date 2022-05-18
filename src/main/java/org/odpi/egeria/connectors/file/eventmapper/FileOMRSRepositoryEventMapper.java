@@ -51,8 +51,7 @@ import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollec
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryHelper;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryValidator;
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 import java.time.Duration;
 import java.util.*;
@@ -66,7 +65,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //        implements OpenMetadataTopicListener
 {
 
-    private static final Logger log = LoggerFactory.getLogger(FileOMRSRepositoryEventMapper.class);
+//    private static final Logger log = LoggerFactory.getLogger(FileOMRSRepositoryEventMapper.class);
     private static final Duration pollDuration = Duration.ofMillis(100);
 
     private String sourceName;
