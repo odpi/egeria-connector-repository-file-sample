@@ -226,9 +226,6 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 entityToAdd.setMetadataCollectionId(metadataCollectionId);
                 entityToAdd.setMetadataCollectionName(metadataCollectionName);
 
-
-                String entityTypeGUID = repositoryHelper.getTypeDefByName("FileOMRSMetadataCollection",
-                                                                          "DataFile").getGUID();
                 try {
                      embeddedMetadataCollection.saveEntityReferenceCopy(
                             "userId",
