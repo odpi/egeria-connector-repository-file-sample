@@ -300,33 +300,35 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         0);
             }
         }
-        private List<Relationship> getRelationshipsByTypeGuid(String typeName) throws
-                                                                          InvalidParameterException,
-                                                                          RepositoryErrorException,
-                                                                          TypeErrorException,
-                                                                          PropertyErrorException,
-                                                                          PagingErrorException,
-                                                                          FunctionNotSupportedException,
-                                                                          UserNotAuthorizedException {
-            String typeGUID = typeNameToGuidMap.get(typeName);
-            if (typeGUID == null) {
-                // TODO throw Exception
-                return null;
-            } else {
-                return fileMetadataCollection.findRelationships(
-                        "userId",    //TODO get from config
-                       typeGUID,
-                        null,
-                        null,
-                        0,
-                        null,
-                        null,
-                        null,
-                        null,
-                        0);
-            }
-        }
-    }
+
+        // Uncomment when we start to use this method
+//        private List<Relationship> getRelationshipsByTypeGuid(String typeName) throws
+//                                                                          InvalidParameterException,
+//                                                                          RepositoryErrorException,
+//                                                                          TypeErrorException,
+//                                                                          PropertyErrorException,
+//                                                                          PagingErrorException,
+//                                                                          FunctionNotSupportedException,
+//                                                                          UserNotAuthorizedException {
+//            String typeGUID = typeNameToGuidMap.get(typeName);
+//            if (typeGUID == null) {
+//                // TODO throw Exception
+//                return null;
+//            } else {
+//                return fileMetadataCollection.findRelationships(
+//                        "userId",    //TODO get from config
+//                       typeGUID,
+//                        null,
+//                        null,
+//                        0,
+//                        null,
+//                        null,
+//                        null,
+//                        null,
+//                        0);
+//            }
+//        }
+//    }
 
 
         /**

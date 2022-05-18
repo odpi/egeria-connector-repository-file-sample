@@ -45,7 +45,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
 
     private final SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-    private String folderLocation = null;
+//    private String folderLocation = null;
 
     OMRSMetadataCollection embeddedMetadataCollection = null;
 
@@ -82,7 +82,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
               supportedAttributeTypeNames,
               supportedTypeNames);
 
-        this.folderLocation = folderLocation;
+//        this.folderLocation = folderLocation;
         this.metadataCollectionId = metadataCollectionId;
         try {
             OMRSRepositoryConnector embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper,
@@ -264,27 +264,6 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
     }
 
     /**
-     * Throw an EntityNotKnownException using the provided parameters.
-     * @param errorCode the error code for the exception
-     * @param methodName the method throwing the exception
-     * @param cause the underlying cause of the exception (if any, otherwise null)
-     * @param params any parameters for formatting the error message
-     * @throws EntityNotKnownException always
-     */
-    private void raiseEntityNotKnownException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws EntityNotKnownException {
-        if (cause == null) {
-            throw new EntityNotKnownException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
-        } else {
-            throw new EntityNotKnownException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
-        }
-    }
-
-    /**
      * Throw a RelationshipNotKnownException using the provided parameters.
      * @param errorCode the error code for the exception
      * @param methodName the method throwing the exception
@@ -320,27 +299,6 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
                     methodName);
         } else {
             throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
-        }
-    }
-
-    /**
-     * Throw a TypeDefNotKnownException using the provided parameters.
-     * @param errorCode the error code for the exception
-     * @param methodName the method throwing the exception
-     * @param cause the underlying cause of the exception (if any, otherwise null)
-     * @param params any parameters for formatting the error message
-     * @throws TypeDefNotKnownException always
-     */
-    private void raiseTypeDefNotKnownException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws TypeDefNotKnownException {
-        if (cause == null) {
-            throw new TypeDefNotKnownException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
-        } else {
-            throw new TypeDefNotKnownException(errorCode.getMessageDefinition(params),
                     this.getClass().getName(),
                     methodName,
                     cause);
