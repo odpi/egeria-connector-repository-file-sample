@@ -70,9 +70,9 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
     private FileOMRSRepositoryConnector fileRepositoryConnector;
     private FileOMRSMetadataCollection fileMetadataCollection;
 
-    private String metadataCollectionId;
-    private String originatorServerName;
-    private String originatorServerType;
+//    private String metadataCollectionId;
+//    private String originatorServerName;
+//    private String originatorServerType;
     Map<String, String> typeNameToGuidMap =null;
 
 
@@ -86,7 +86,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
      */
     public FileOMRSRepositoryEventMapper() {
         super();
-        this.sourceName = "FileOMRSRepositoryEventMapper";
+//        this.sourceName = "FileOMRSRepositoryEventMapper";
     }
 
     /**
@@ -119,8 +119,8 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
         }
 //        this.fileMetadataCollection.setEventMapper(this);
 
-        this.originatorServerName = fileRepositoryConnector.getServerName();
-        this.originatorServerType = fileRepositoryConnector.getServerType();
+//        this.originatorServerName = fileRepositoryConnector.getServerName();
+//        this.originatorServerType = fileRepositoryConnector.getServerType();
         pollingThread.start();
 
     }
