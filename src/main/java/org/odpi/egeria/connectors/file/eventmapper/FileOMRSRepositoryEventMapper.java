@@ -66,7 +66,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 {
 
 //    private static final Logger log = LoggerFactory.getLogger(FileOMRSRepositoryEventMapper.class);
-    private static final Duration pollDuration = Duration.ofMillis(100);
 
     private String sourceName;
     private FileOMRSRepositoryConnector fileRepositoryConnector;
@@ -328,7 +327,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //                        0);
 //            }
 //        }
-//    }
+      }
 
 
         /**

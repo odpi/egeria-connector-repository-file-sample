@@ -326,17 +326,4 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
         }
     }
 
-    /**
-     * Throw a FunctionNotSupportedException using the provided parameters.
-     * @param errorCode the error code for the exception
-     * @param methodName the method throwing the exception
-     * @param params any parameters for formatting the error message
-     * @throws FunctionNotSupportedException always
-     */
-    private void raiseFunctionNotSupportedException(FileOMRSErrorCode errorCode, String methodName, String ...params) throws FunctionNotSupportedException {
-        throw new FunctionNotSupportedException(errorCode.getMessageDefinition(params),
-                this.getClass().getName(),
-                methodName);
-    }
-
 }
