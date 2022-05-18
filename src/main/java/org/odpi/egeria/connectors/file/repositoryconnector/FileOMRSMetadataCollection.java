@@ -86,8 +86,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
         this.metadataCollectionId = metadataCollectionId;
         try {
             OMRSRepositoryConnector embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper,
-                                                                                              repositoryValidator,
-                                                                                              auditLog);
+                                                                                              repositoryValidator);
             this.embeddedMetadataCollection = embeddedConnector.getMetadataCollection();
         } catch (ConnectionCheckedException e) {
             raiseRepositoryErrorException(FileOMRSErrorCode.COLLECTION_FAILED_INITIALISE, "FileOMRSMetadataCollection constructor", e, "null");
@@ -99,8 +98,8 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
         return embeddedMetadataCollection;
     }
     private OMRSRepositoryConnector initializeEmbeddedRepositoryConnector(OMRSRepositoryHelper  repositoryHelper,
-                                                                          OMRSRepositoryValidator repositoryValidator,
-                                                                          AuditLog auditLog) throws ConnectionCheckedException ,ConnectorCheckedException {
+                                                                          OMRSRepositoryValidator repositoryValidator)
+                                                                            throws ConnectionCheckedException ,ConnectorCheckedException {
 
         Connection connection = new Connection();
         ConnectorType connectorType = new ConnectorType();
