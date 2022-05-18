@@ -67,10 +67,8 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
 //    private static final Logger log = LoggerFactory.getLogger(FileOMRSRepositoryEventMapper.class);
 
-    private String sourceName;
     private FileOMRSRepositoryConnector fileRepositoryConnector;
     private FileOMRSMetadataCollection fileMetadataCollection;
-    private OMRSRepositoryHelper repositoryHelper;
 
     private String metadataCollectionId;
     private String originatorServerName;

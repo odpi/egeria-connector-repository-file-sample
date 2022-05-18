@@ -263,26 +263,26 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
         return null;
     }
 
-    /**
-     * Throw a RelationshipNotKnownException using the provided parameters.
-     * @param errorCode the error code for the exception
-     * @param methodName the method throwing the exception
-     * @param cause the underlying cause of the exception (if any, otherwise null)
-     * @param params any parameters for formatting the error message
-     * @throws RelationshipNotKnownException always
-     */
-    private void raiseRelationshipNotKnownException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RelationshipNotKnownException {
-        if (cause == null) {
-            throw new RelationshipNotKnownException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
-        } else {
-            throw new RelationshipNotKnownException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
-        }
-    }
+//    /**
+//     * Throw a RelationshipNotKnownException using the provided parameters.
+//     * @param errorCode the error code for the exception
+//     * @param methodName the method throwing the exception
+//     * @param cause the underlying cause of the exception (if any, otherwise null)
+//     * @param params any parameters for formatting the error message
+//     * @throws RelationshipNotKnownException always
+//     */
+//    private void raiseRelationshipNotKnownException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RelationshipNotKnownException {
+//        if (cause == null) {
+//            throw new RelationshipNotKnownException(errorCode.getMessageDefinition(params),
+//                    this.getClass().getName(),
+//                    methodName);
+//        } else {
+//            throw new RelationshipNotKnownException(errorCode.getMessageDefinition(params),
+//                    this.getClass().getName(),
+//                    methodName,
+//                    cause);
+//        }
+//    }
 
     /**
      * Throw a RepositoryErrorException using the provided parameters.
