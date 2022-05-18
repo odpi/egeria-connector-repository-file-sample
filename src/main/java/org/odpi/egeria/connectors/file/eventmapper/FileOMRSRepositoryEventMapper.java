@@ -169,7 +169,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             });
             final int supportedCount = supportedTypeNames.size();
 
-            Map<String,String> typeNameToGuidMap = null;
             int typesAvailableCount = 0;
             int retryCount =0;
             while (running.get()) {
@@ -249,7 +248,8 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
 
                     } catch (Exception e) {
-                        //TODO
+                                  //TODO exception processing
+                       System.err.println("Error");
                     }
                 }
                 //  scope a call /calls to the repository connector for example for a file
