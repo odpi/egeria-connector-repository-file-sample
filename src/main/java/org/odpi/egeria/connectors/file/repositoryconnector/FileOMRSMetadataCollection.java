@@ -44,11 +44,9 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
     private static final Logger log = LoggerFactory.getLogger(org.odpi.egeria.connectors.file.repositoryconnector.FileOMRSMetadataCollection.class);
 
     private final SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    private FileOMRSRepositoryConnector fileRepositoryConnector;
-    private Set<InstanceStatus> availableStates;
-    private FileOMRSRepositoryEventMapper eventMapper = null;
+
     private String folderLocation = null;
-    String metadataCollectionId = null;
+
     OMRSMetadataCollection embeddedMetadataCollection = null;
 
     /**

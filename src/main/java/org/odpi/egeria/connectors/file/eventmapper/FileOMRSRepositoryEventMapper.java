@@ -333,7 +333,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
          * {@inheritDoc}
          */
         @Override
-        public void disconnect() throws ConnectorCheckedException {
+        synchronized public void disconnect() throws ConnectorCheckedException {
             super.disconnect();
             final String methodName = "disconnect";
             pollingThread.stop();

@@ -125,11 +125,11 @@ public enum FileOMRSAuditCode implements AuditLogMessageSet {
     ;
 
 
-    private String logMessageId;
-    private OMRSAuditLogRecordSeverity severity;
-    private String logMessage;
-    private String systemAction;
-    private String userAction;
+    final private String logMessageId;
+    final private OMRSAuditLogRecordSeverity severity;
+    final private String logMessage;
+    final private String systemAction;
+    final private String userAction;
 
 
     /**
