@@ -147,7 +147,7 @@ public enum FileOMRSErrorCode implements ExceptionMessageSet {
 
     ;
 
-    private ExceptionMessageDefinition messageDefinition;
+    final private ExceptionMessageDefinition messageDefinition;
 
     /**
      * The constructor for FileOMRSErrorCode expects to be passed one of the enumeration rows defined in
