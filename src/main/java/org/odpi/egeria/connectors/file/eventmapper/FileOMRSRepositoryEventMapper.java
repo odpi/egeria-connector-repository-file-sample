@@ -77,8 +77,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
     private String originatorServerType;
     Map<String, String> typeNameToGuidMap =null;
 
-    private Properties fileKafkaProperties;
-    private String fileKafkaTopic;
+
 
     private PollingThread pollingThread;
 //    private EntityMessageDeserializer deserializer;
@@ -130,7 +129,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
 
     /**
-     * Class to support multi-threaded consumption of Apache File Kafka events.
+     * Class to poll for file content
      */
     private class PollingThread implements Runnable {
 
