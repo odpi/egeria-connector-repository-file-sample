@@ -159,7 +159,7 @@ public enum FileOMRSAuditCode implements AuditLogMessageSet {
                 severity,
                 logMessage,
                 systemAction,
-                userAction); 
+                userAction);
     }
 
     /**

@@ -304,25 +304,25 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
         }
     }
 
-    /**
-     * Throw a TypeDefNotSupportedException using the provided parameters.
-     * @param errorCode the error code for the exception
-     * @param methodName the method throwing the exception
-     * @param cause the underlying cause of the exception (if any, otherwise null)
-     * @param params any parameters for formatting the error message
-     * @throws TypeDefNotSupportedException always
-     */
-    private void raiseTypeDefNotSupportedException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws TypeDefNotSupportedException {
-        if (cause == null) {
-            throw new TypeDefNotSupportedException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
-        } else {
-            throw new TypeDefNotSupportedException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
-        }
-    }
+//    /**
+//     * Throw a TypeDefNotSupportedException using the provided parameters.
+//     * @param errorCode the error code for the exception
+//     * @param methodName the method throwing the exception
+//     * @param cause the underlying cause of the exception (if any, otherwise null)
+//     * @param params any parameters for formatting the error message
+//     * @throws TypeDefNotSupportedException always
+//     */
+//    private void raiseTypeDefNotSupportedException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws TypeDefNotSupportedException {
+//        if (cause == null) {
+//            throw new TypeDefNotSupportedException(errorCode.getMessageDefinition(params),
+//                    this.getClass().getName(),
+//                    methodName);
+//        } else {
+//            throw new TypeDefNotSupportedException(errorCode.getMessageDefinition(params),
+//                    this.getClass().getName(),
+//                    methodName,
+//                    cause);
+//        }
+//    }
 
 }
