@@ -13,6 +13,7 @@ import org.odpi.openmetadata.frameworks.connectors.properties.beans.Connection;
 import org.odpi.openmetadata.frameworks.connectors.properties.beans.ConnectorType;
 import org.odpi.openmetadata.repositoryservices.archivemanager.OMRSArchiveManager;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
+import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.HistorySequencingOrder;
 import org.odpi.openmetadata.adminservices.configuration.properties.OpenMetadataExchangeRule;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryConnector;
 import org.odpi.openmetadata.repositoryservices.localrepository.repositoryconnector.LocalOMRSConnectorProvider;
@@ -33,17 +34,11 @@ import org.odpi.openmetadata.repositoryservices.eventmanagement.OMRSRepositoryEv
 import org.odpi.openmetadata.frameworks.auditlog.AuditLog;
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
-//import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionBase {
 
-//    private static final Logger log = LoggerFactory.getLogger(org.odpi.egeria.connectors.file.repositoryconnector.FileOMRSMetadataCollection.class);
-
-//    private final SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     OMRSMetadataCollection embeddedMetadataCollection = null;
 
@@ -111,173 +106,6 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
 
         return embeddedConnector;
     }
-
-    /**
-     * Return a list of entities that match the supplied criteria.  The results can be returned over many pages.
-     *
-     * @param userId unique identifier for requesting user.
-     * @param entityTypeGUID String unique identifier for the entity type of interest (null means any entity type).
-     * @param entitySubtypeGUIDs optional list of the unique identifiers (guids) for subtypes of the entityTypeGUID to
-     *                           include in the search results. Null means all subtypes.
-     * @param matchProperties Optional list of entity property conditions to match.
-     * @param fromEntityElement the starting element number of the entities to return.
-     *                                This is used when retrieving elements
-     *                                beyond the first page of results. Zero means start from the first element.
-     * @param limitResultsByStatus By default, entities in all non-DELETED statuses are returned.  However, it is possible
-     *                             to specify a list of statuses (eg ACTIVE) to restrict the results to.  Null means all
-     *                             status values except DELETED.
-     * @param matchClassifications Optional list of entity classifications to match.
-     * @param asOfTime Requests a historical query of the entity.  Null means return the present values.
-     * @param sequencingProperty String name of the entity property that is to be used to sequence the results.
-     *                           Null means do not sequence on a property name (see SequencingOrder).
-     * @param sequencingOrder Enum defining how the results should be ordered.
-     * @param pageSize the maximum number of result entities that can be returned on this request.  Zero means
-     *                 unrestricted return results size.
-     * @return a list of entities matching the supplied criteria; null means no matching entities in the metadata
-     * collection.
-     * @throws InvalidParameterException a parameter is invalid or null.
-     * @throws TypeErrorException the type guid passed on the request is not known by the
-     *                              metadata collection.
-     * @throws RepositoryErrorException there is a problem communicating with the metadata repository where
-     *                                    the metadata collection is stored.
-     * @throws PropertyErrorException the properties specified are not valid for any of the requested types of
-     *                                  entity.
-     * @throws PagingErrorException the paging/sequencing parameters are set up incorrectly.
-     * @throws UserNotAuthorizedException the userId is not permitted to perform this operation.
-     */
-    @Override
-    public List<EntityDetail> findEntities(String                    userId,
-                                           String                    entityTypeGUID,
-                                           List<String>              entitySubtypeGUIDs,
-                                           SearchProperties          matchProperties,
-                                           int                       fromEntityElement,
-                                           List<InstanceStatus>      limitResultsByStatus,
-                                           SearchClassifications     matchClassifications,
-                                           Date                      asOfTime,
-                                           String                    sequencingProperty,
-                                           SequencingOrder           sequencingOrder,
-                                           int                       pageSize) throws InvalidParameterException,
-                                                                                      RepositoryErrorException,
-                                                                                      TypeErrorException,
-                                                                                      PropertyErrorException,
-                                                                                      PagingErrorException,
-                                                                                      UserNotAuthorizedException,
-                                                                                      FunctionNotSupportedException
-    {
-
-        // call the embedded in memory connector
-        if (embeddedMetadataCollection != null) {
-            return embeddedMetadataCollection.findEntities(userId,
-                                                           entityTypeGUID,
-                                                           entitySubtypeGUIDs,
-                                                           matchProperties,
-                                                           fromEntityElement,
-                                                           limitResultsByStatus,
-                                                           matchClassifications,
-                                                           asOfTime,
-                                                           sequencingProperty,
-                                                           sequencingOrder,
-                                                           pageSize);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Return a list of relationships that match the requested conditions.  The results can be received as a series of
-     * pages.
-     *
-     * @param userId unique identifier for requesting user.
-     * @param relationshipTypeGUID unique identifier (guid) for the relationship's type.  Null means all types
-     *                             (but may be slow so not recommended).
-     * @param relationshipSubtypeGUIDs optional list of the unique identifiers (guids) for subtypes of the
-     *                                 relationshipTypeGUID to include in the search results. Null means all subtypes.
-     * @param matchProperties Optional list of relationship property conditions to match.
-     * @param fromRelationshipElement the starting element number of the entities to return.
-     *                                This is used when retrieving elements
-     *                                beyond the first page of results. Zero means start from the first element.
-     * @param limitResultsByStatus By default, relationships in all non-DELETED statuses are returned.  However, it is possible
-     *                             to specify a list of statuses (eg ACTIVE) to restrict the results to.  Null means all
-     *                             status values except DELETED.
-     * @param asOfTime Requests a historical query of the relationships for the entity.  Null means return the
-     *                 present values.
-     * @param sequencingProperty String name of the property that is to be used to sequence the results.
-     *                           Null means do not sequence on a property name (see SequencingOrder).
-     * @param sequencingOrder Enum defining how the results should be ordered.
-     * @param pageSize the maximum number of result relationships that can be returned on this request.  Zero means
-     *                 unrestricted return results size.
-     * @return a list of relationships.  Null means no matching relationships.
-     * @throws InvalidParameterException one of the parameters is invalid or null.
-     * @throws TypeErrorException the type guid passed on the request is not known by the
-     *                              metadata collection.
-     * @throws RepositoryErrorException there is a problem communicating with the metadata repository where
-     *                                    the metadata collection is stored.
-     * @throws PropertyErrorException the properties specified are not valid for any of the requested types of
-     *                                  relationships.
-     * @throws PagingErrorException the paging/sequencing parameters are set up incorrectly.
-     * @throws FunctionNotSupportedException the repository does not support one of the provided parameters.
-     * @throws UserNotAuthorizedException the userId is not permitted to perform this operation.
-     * @see OMRSRepositoryHelper#getExactMatchRegex(String)
-     */
-    @Override
-    public  List<Relationship> findRelationships(String                    userId,
-                                                 String                    relationshipTypeGUID,
-                                                 List<String>              relationshipSubtypeGUIDs,
-                                                 SearchProperties          matchProperties,
-                                                 int                       fromRelationshipElement,
-                                                 List<InstanceStatus>      limitResultsByStatus,
-                                                 Date                      asOfTime,
-                                                 String                    sequencingProperty,
-                                                 SequencingOrder           sequencingOrder,
-                                                 int                       pageSize) throws InvalidParameterException,
-                                                                                            TypeErrorException,
-                                                                                            RepositoryErrorException,
-                                                                                            PropertyErrorException,
-                                                                                            PagingErrorException,
-                                                                                            FunctionNotSupportedException,
-                                                                                            UserNotAuthorizedException
-    {
-        final String  methodName = "findRelationships";
-
-        this.findRelationshipsParameterValidation(userId,
-                                                  relationshipTypeGUID,
-                                                  relationshipSubtypeGUIDs,
-                                                  matchProperties,
-                                                  fromRelationshipElement,
-                                                  limitResultsByStatus,
-                                                  asOfTime,
-                                                  sequencingProperty,
-                                                  sequencingOrder,
-                                                  pageSize);
-
-        /*
-         * Perform operation
-         */
-        reportUnsupportedOptionalFunction(methodName);
-        return null;
-    }
-
-//    /**
-//     * Throw a RelationshipNotKnownException using the provided parameters.
-//     * @param errorCode the error code for the exception
-//     * @param methodName the method throwing the exception
-//     * @param cause the underlying cause of the exception (if any, otherwise null)
-//     * @param params any parameters for formatting the error message
-//     * @throws RelationshipNotKnownException always
-//     */
-//    private void raiseRelationshipNotKnownException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RelationshipNotKnownException {
-//        if (cause == null) {
-//            throw new RelationshipNotKnownException(errorCode.getMessageDefinition(params),
-//                    this.getClass().getName(),
-//                    methodName);
-//        } else {
-//            throw new RelationshipNotKnownException(errorCode.getMessageDefinition(params),
-//                    this.getClass().getName(),
-//                    methodName,
-//                    cause);
-//        }
-//    }
-
     /**
      * Throw a RepositoryErrorException using the provided parameters.
      * @param errorCode the error code for the exception
@@ -289,35 +117,269 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
     private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RepositoryErrorException {
         if (cause == null) {
             throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
+                                               this.getClass().getName(),
+                                               methodName);
         } else {
             throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
+                                               this.getClass().getName(),
+                                               methodName,
+                                               cause);
         }
     }
 
-//    /**
-//     * Throw a TypeDefNotSupportedException using the provided parameters.
-//     * @param errorCode the error code for the exception
-//     * @param methodName the method throwing the exception
-//     * @param cause the underlying cause of the exception (if any, otherwise null)
-//     * @param params any parameters for formatting the error message
-//     * @throws TypeDefNotSupportedException always
-//     */
-//    private void raiseTypeDefNotSupportedException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws TypeDefNotSupportedException {
-//        if (cause == null) {
-//            throw new TypeDefNotSupportedException(errorCode.getMessageDefinition(params),
-//                    this.getClass().getName(),
-//                    methodName);
-//        } else {
-//            throw new TypeDefNotSupportedException(errorCode.getMessageDefinition(params),
-//                    this.getClass().getName(),
-//                    methodName,
-//                    cause);
-//        }
+    // ** Delegate all the collection methods we care about to the embedded connector collection.
+    // Currently only read orientated calls in groups 3 and 4 are implmented. See OMRSMetadataCollection class for the meaning of the groups.
+
+    @Override
+    public EntityDetail isEntityKnown(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.isEntityKnown(userId, guid);
+    }
+
+    @Override
+    public EntitySummary getEntitySummary(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getEntitySummary(userId, guid);
+    }
+
+    @Override
+    public EntityDetail getEntityDetail(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getEntityDetail(userId, guid);
+    }
+
+    @Override
+    public EntityDetail getEntityDetail(String userId, String guid, Date asOfTime) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getEntityDetail(userId, guid, asOfTime);
+    }
+
+//    @Override
+//    public List<EntityDetail> getEntityDetailHistory(String userId, String guid, Date fromTime, Date toTime, int startFromElement, int pageSize, HistorySequencingOrder sequencingOrder) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return embeddedMetadataCollection.getEntityDetailHistory(userId, guid, fromTime, toTime, startFromElement, pageSize, sequencingOrder);
+//    }
+
+    @Override
+    public List<Relationship> getRelationshipsForEntity(String userId, String entityGUID, String relationshipTypeGUID, int fromRelationshipElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, EntityNotKnownException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getRelationshipsForEntity(userId, entityGUID, relationshipTypeGUID, fromRelationshipElement, limitResultsByStatus, asOfTime, sequencingProperty, sequencingOrder, pageSize);
+    }
+
+    @Override
+    public List<EntityDetail> findEntities(String userId, String entityTypeGUID, List<String> entitySubtypeGUIDs, SearchProperties matchProperties, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, SearchClassifications matchClassifications, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+
+            return embeddedMetadataCollection.findEntities(userId,
+                                                           entityTypeGUID,
+                                                           entitySubtypeGUIDs,
+                                                           matchProperties,
+                                                           fromEntityElement,
+                                                           limitResultsByStatus,
+                                                           matchClassifications,
+                                                           asOfTime,
+                                                           sequencingProperty,
+                                                           sequencingOrder,
+                                                           pageSize);
+    }
+
+    @Override
+    public List<EntityDetail> findEntitiesByProperty(String userId, String entityTypeGUID, InstanceProperties matchProperties, MatchCriteria matchCriteria, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, List<String> limitResultsByClassification, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.findEntitiesByProperty(userId, entityTypeGUID, matchProperties, matchCriteria, fromEntityElement, limitResultsByStatus,  limitResultsByClassification, asOfTime, sequencingProperty, sequencingOrder,  pageSize);
+    }
+
+    @Override
+    public List<EntityDetail> findEntitiesByClassification(String userId, String entityTypeGUID, String classificationName, InstanceProperties matchClassificationProperties, MatchCriteria matchCriteria, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, ClassificationErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.findEntitiesByClassification(userId, entityTypeGUID, classificationName,  matchClassificationProperties, matchCriteria, fromEntityElement, limitResultsByStatus, asOfTime, sequencingProperty,  sequencingOrder, pageSize);
+    }
+
+    @Override
+    public List<EntityDetail> findEntitiesByPropertyValue(String userId, String entityTypeGUID, String searchCriteria, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, List<String> limitResultsByClassification, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.findEntitiesByPropertyValue(userId, entityTypeGUID, searchCriteria, fromEntityElement, limitResultsByStatus, limitResultsByClassification, asOfTime, sequencingProperty, sequencingOrder, pageSize);
+        }
+
+    @Override
+    public Relationship isRelationshipKnown(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.isRelationshipKnown(userId, guid);
+    }
+
+    @Override
+    public Relationship getRelationship(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getRelationship(userId, guid);
+    }
+
+    @Override
+    public Relationship getRelationship(String userId, String guid, Date asOfTime) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getRelationship(userId, guid, asOfTime);
+    }
+
+//    @Override
+//    public List<Relationship> getRelationshipHistory(String userId, String guid, Date fromTime, Date toTime, int startFromElement, int pageSize, HistorySequencingOrder sequencingOrder) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return embeddedMetadataCollection.getRelationshipHistory( userId,  guid,  fromTime,  toTime, startFromElement, pageSize, sequencingOrder);
+//    }
+
+    @Override
+    public List<Relationship> findRelationships(String userId, String relationshipTypeGUID, List<String> relationshipSubtypeGUIDs, SearchProperties matchProperties, int fromRelationshipElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.findRelationships(userId, relationshipTypeGUID, relationshipSubtypeGUIDs,  matchProperties, fromRelationshipElement, limitResultsByStatus,  asOfTime, sequencingProperty, sequencingOrder, pageSize) ;
+    }
+
+    @Override
+    public List<Relationship> findRelationshipsByProperty(String userId, String relationshipTypeGUID, InstanceProperties matchProperties, MatchCriteria matchCriteria, int fromRelationshipElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.findRelationshipsByProperty(userId, relationshipTypeGUID, matchProperties, matchCriteria, fromRelationshipElement, limitResultsByStatus, asOfTime, sequencingProperty, sequencingOrder, pageSize) ;
+
+        }
+
+    @Override
+    public List<Relationship> findRelationshipsByPropertyValue(String userId, String relationshipTypeGUID, String searchCriteria, int fromRelationshipElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.findRelationshipsByPropertyValue(userId,  relationshipTypeGUID, searchCriteria, fromRelationshipElement, limitResultsByStatus, asOfTime, sequencingProperty,  sequencingOrder, pageSize);
+    }
+
+    @Override
+    public InstanceGraph getLinkingEntities(String userId, String startEntityGUID, String endEntityGUID, List<InstanceStatus> limitResultsByStatus, Date asOfTime) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, PropertyErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getLinkingEntities(userId, startEntityGUID, endEntityGUID, limitResultsByStatus, asOfTime);
+        }
+
+    @Override
+    public InstanceGraph getEntityNeighborhood(String userId, String entityGUID, List<String> entityTypeGUIDs, List<String> relationshipTypeGUIDs, List<InstanceStatus> limitResultsByStatus, List<String> limitResultsByClassification, Date asOfTime, int level) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, EntityNotKnownException, PropertyErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getEntityNeighborhood(userId,  entityGUID,  entityTypeGUIDs, relationshipTypeGUIDs, limitResultsByStatus, limitResultsByClassification, asOfTime,  level);
+    }
+
+    @Override
+    public List<EntityDetail> getRelatedEntities(String userId, String startEntityGUID, List<String> entityTypeGUIDs, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, List<String> limitResultsByClassification, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, EntityNotKnownException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+        return embeddedMetadataCollection.getRelatedEntities(userId, startEntityGUID, entityTypeGUIDs, fromEntityElement, limitResultsByStatus, limitResultsByClassification, asOfTime, sequencingProperty, sequencingOrder, pageSize);
+    }
+
+//    @Override
+//    public EntityDetail addEntity(String userId, String entityTypeGUID, InstanceProperties initialProperties, List<Classification> initialClassifications, InstanceStatus initialStatus) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, ClassificationErrorException, StatusNotSupportedException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+
+//    @Override
+//    public void addEntityProxy(String userId, EntityProxy entityProxy) throws InvalidParameterException, RepositoryErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
+//    }
+//
+//    @Override
+//    public EntityDetail updateEntityStatus(String userId, String entityGUID, InstanceStatus newStatus) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, StatusNotSupportedException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail updateEntityProperties(String userId, String entityGUID, InstanceProperties properties) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, PropertyErrorException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail undoEntityUpdate(String userId, String entityGUID) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail deleteEntity(String userId, String typeDefGUID, String typeDefName, String obsoleteEntityGUID) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public void purgeEntity(String userId, String typeDefGUID, String typeDefName, String deletedEntityGUID) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityNotDeletedException, UserNotAuthorizedException, FunctionNotSupportedException {
+//
+//    }
+//
+//    @Override
+//    public EntityDetail restoreEntity(String userId, String deletedEntityGUID) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityNotDeletedException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail classifyEntity(String userId, String entityGUID, String classificationName, InstanceProperties classificationProperties) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, ClassificationErrorException, PropertyErrorException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail declassifyEntity(String userId, String entityGUID, String classificationName) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, ClassificationErrorException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail updateEntityClassification(String userId, String entityGUID, String classificationName, InstanceProperties properties) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, ClassificationErrorException, PropertyErrorException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship addRelationship(String userId, String relationshipTypeGUID, InstanceProperties initialProperties, String entityOneGUID, String entityTwoGUID, InstanceStatus initialStatus) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, EntityNotKnownException, StatusNotSupportedException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship updateRelationshipStatus(String userId, String relationshipGUID, InstanceStatus newStatus) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, StatusNotSupportedException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship updateRelationshipProperties(String userId, String relationshipGUID, InstanceProperties properties) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, PropertyErrorException, UserNotAuthorizedException, FunctionNotSupportedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship undoRelationshipUpdate(String userId, String relationshipGUID) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship deleteRelationship(String userId, String typeDefGUID, String typeDefName, String obsoleteRelationshipGUID) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public void purgeRelationship(String userId, String typeDefGUID, String typeDefName, String deletedRelationshipGUID) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, RelationshipNotDeletedException, UserNotAuthorizedException, FunctionNotSupportedException {
+//
+//    }
+//
+//    @Override
+//    public Relationship restoreRelationship(String userId, String deletedRelationshipGUID) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, RelationshipNotDeletedException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail reIdentifyEntity(String userId, String typeDefGUID, String typeDefName, String entityGUID, String newEntityGUID) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public EntityDetail reTypeEntity(String userId, String entityGUID, TypeDefSummary currentTypeDefSummary, TypeDefSummary newTypeDefSummary) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, ClassificationErrorException, EntityNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship reIdentifyRelationship(String userId, String typeDefGUID, String typeDefName, String relationshipGUID, String newRelationshipGUID) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public Relationship reTypeRelationship(String userId, String relationshipGUID, TypeDefSummary currentTypeDefSummary, TypeDefSummary newTypeDefSummary) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        return null;
+//    }
+//
+//    @Override
+//    public void saveEntityReferenceCopy(String userId, EntityDetail entity) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, HomeEntityException, EntityConflictException, InvalidEntityException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
+//    }
+//
+//    @Override
+//    public void purgeEntityReferenceCopy(String userId, String entityGUID, String typeDefGUID, String typeDefName, String homeMetadataCollectionId) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, HomeEntityException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
+//    }
+//
+//    @Override
+//    public void refreshEntityReferenceCopy(String userId, String entityGUID, String typeDefGUID, String typeDefName, String homeMetadataCollectionId) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, HomeEntityException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
+//    }
+//
+//    @Override
+//    public void saveRelationshipReferenceCopy(String userId, Relationship relationship) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, EntityNotKnownException, PropertyErrorException, HomeRelationshipException, RelationshipConflictException, InvalidRelationshipException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
+//    }
+//
+//    @Override
+//    public void purgeRelationshipReferenceCopy(String userId, String relationshipGUID, String typeDefGUID, String typeDefName, String homeMetadataCollectionId) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, HomeRelationshipException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
+//    }
+//
+//    @Override
+//    public void refreshRelationshipReferenceCopy(String userId, String relationshipGUID, String typeDefGUID, String typeDefName, String homeMetadataCollectionId) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, HomeRelationshipException, FunctionNotSupportedException, UserNotAuthorizedException {
+//
 //    }
 
 }

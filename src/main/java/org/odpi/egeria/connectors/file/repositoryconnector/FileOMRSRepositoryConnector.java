@@ -210,8 +210,8 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 Instant instant = Instant.now();
                 long timeStampMillis = instant.toEpochMilli();
                 entityToAdd.setVersion(timeStampMillis);
-                // TODO set repository Name properly
-                String repositoryName= "embedded";
+                // TODO set repository Name from config if we have one in the embedded connection
+                String repositoryName= metadataCollectionName+"-embedded";
                 TypeDef typeDef = repositoryHelper.getTypeDefByName(repositoryName, "DataFile");
                 try {
                     InstanceType instanceType = repositoryHelper.getNewInstanceType(repositoryName, typeDef);
@@ -230,7 +230,6 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                      embeddedMetadataCollection.saveEntityReferenceCopy(
                             "userId",
                            entityToAdd);
-//                    System.err.println("saveEntityReferenceCopy completed with no error");
                 } catch (InvalidParameterException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
                 } catch (RepositoryErrorException e) {
@@ -252,14 +251,10 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 } catch (FunctionNotSupportedException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
                 } catch (UserNotAuthorizedException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORISED_EXCEPTION, methodName, e);
+                    raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
                 }
-
             }
-
-
         }
-
     }
 
 
