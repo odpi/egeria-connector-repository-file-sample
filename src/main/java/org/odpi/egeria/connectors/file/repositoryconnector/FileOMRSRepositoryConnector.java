@@ -57,6 +57,10 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
     private final List<String> supportedTypeNames = Arrays.asList(new String[]{
                                                                                 // entity types
+                                                                                "DataStore", // super type of Datafile
+                                                                                "Asset", // super type of Datastore
+                                                                                "Referenceable", // super type of the others
+                                                                                "OpenMetadataRoot", // super type of referenceable
                                                                                 "DataFile",
                                                                                 "Connection",
                                                                                 "ConnectorType",
@@ -150,10 +154,10 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
             raiseConnectorCheckedException(FileOMRSErrorCode.NOT_A_FOLDER, methodName, null, folder.getName());
         } else {
             File[] dataFiles = folder.listFiles();
-            OMRSMetadataCollection embeddedMetadataCollection = null;
+
             try {
                 FileOMRSMetadataCollection fileMetadataCollection = (FileOMRSMetadataCollection)getMetadataCollection();
-                embeddedMetadataCollection = fileMetadataCollection.getEmbeddedMetadataCollection();
+                fileMetadataCollection.getEmbeddedMetadataCollection();
             } catch( RepositoryErrorException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.UNABLE_TO_INITIALISE_CACHE, methodName, e);
             }
@@ -227,9 +231,9 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 entityToAdd.setMetadataCollectionName(metadataCollectionName);
 
                 try {
-                     embeddedMetadataCollection.saveEntityReferenceCopy(
+                     metadataCollection.saveEntityReferenceCopy(
                             "userId",
-                           entityToAdd);
+                             entityToAdd);
                 } catch (InvalidParameterException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
                 } catch (RepositoryErrorException e) {

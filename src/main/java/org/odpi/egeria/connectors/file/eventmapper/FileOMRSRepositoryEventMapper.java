@@ -156,6 +156,10 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
                 final List<String> supportedTypeNames = Arrays.asList(new String[]{
                         // entity types
+                        "DataStore", // super type of Datafile
+                        "Asset", // super type of Datastore
+                        "Referenceable", // super type of the others
+                        "OpenMetadataRoot", // super type of referenceable
                         "DataFile",
                         "Connection",
                         "ConnectorType",
