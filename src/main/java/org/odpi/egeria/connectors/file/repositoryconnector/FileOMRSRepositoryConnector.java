@@ -23,8 +23,7 @@ import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollec
 import java.io.File;
 import java.time.Instant;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
@@ -208,7 +207,8 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                         final String attribute2Description     = "Last known modification time.";
                  */
                 EntityDetail entityToAdd= new EntityDetail();
-                entityToAdd.setGUID(canonicalName);
+                String guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes());
+                entityToAdd.setGUID(guid);
                 entityToAdd.setProperties(initialProperties);
                 entityToAdd.setStatus(InstanceStatus.ACTIVE);
                 Instant instant = Instant.now();
