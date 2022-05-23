@@ -117,6 +117,17 @@ public enum FileOMRSAuditCode implements AuditLogMessageSet {
                                                             "The Sample file repository proxy event mapper polling loop sleep has failed with an interrupted exception",
                                                             "The Sample file repository proxy event mapper's polling loop sleep has been interrupted.",
                                                             "No action is required.  This is part of the normal operation of the service."),
+    POLLING_THREAD_INFO_ALREADY_STOPPED("OMRS-FILE-REPOSITORY-0020",
+                                        OMRSAuditLogRecordSeverity.INFO,
+                                        "The Sample file repository proxy event mapper polling loop thread got an exception",
+                                        "The Sample file repository proxy event mapper's polling thread got an excpetion but its state was already not running.",
+                                        "See otehr audit entries for action."),
+    EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION("OMRS-FILE-REPOSITORY-0021",
+                                            OMRSAuditLogRecordSeverity.EXCEPTION,
+                                            "Error {0} in Event mapper Polling loop ",
+                                            "Connector is unable to be used",
+                                            "Check the logs for the details of the Exception and debug."),
+
     ;
 
 

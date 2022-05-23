@@ -16,15 +16,14 @@ import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.TypeDef;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceType;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceProvenanceType;
-
+import java.io.UnsupportedEncodingException;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Instant;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
@@ -57,6 +56,10 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
     private final List<String> supportedTypeNames = Arrays.asList(new String[]{
                                                                                 // entity types
+                                                                                "DataStore", // super type of Datafile
+                                                                                "Asset", // super type of Datastore
+                                                                                "Referenceable", // super type of the others
+                                                                                "OpenMetadataRoot", // super type of referenceable
                                                                                 "DataFile",
                                                                                 "Connection",
                                                                                 "ConnectorType",
@@ -150,10 +153,10 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
             raiseConnectorCheckedException(FileOMRSErrorCode.NOT_A_FOLDER, methodName, null, folder.getName());
         } else {
             File[] dataFiles = folder.listFiles();
-            OMRSMetadataCollection embeddedMetadataCollection = null;
+
             try {
                 FileOMRSMetadataCollection fileMetadataCollection = (FileOMRSMetadataCollection)getMetadataCollection();
-                embeddedMetadataCollection = fileMetadataCollection.getEmbeddedMetadataCollection();
+                fileMetadataCollection.getEmbeddedMetadataCollection();
             } catch( RepositoryErrorException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.UNABLE_TO_INITIALISE_CACHE, methodName, e);
             }
@@ -204,14 +207,20 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                         final String attribute2Description     = "Last known modification time.";
                  */
                 EntityDetail entityToAdd= new EntityDetail();
-                entityToAdd.setGUID(canonicalName);
+                String guid = null;
+                try {
+                    guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                }
+                entityToAdd.setGUID(guid);
                 entityToAdd.setProperties(initialProperties);
                 entityToAdd.setStatus(InstanceStatus.ACTIVE);
                 Instant instant = Instant.now();
                 long timeStampMillis = instant.toEpochMilli();
                 entityToAdd.setVersion(timeStampMillis);
-                // TODO set repository Name properly
-                String repositoryName= "embedded";
+                // TODO set repository Name from config if we have one in the embedded connection
+                String repositoryName= metadataCollectionName+"-embedded";
                 TypeDef typeDef = repositoryHelper.getTypeDefByName(repositoryName, "DataFile");
                 try {
                     InstanceType instanceType = repositoryHelper.getNewInstanceType(repositoryName, typeDef);
@@ -227,10 +236,9 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 entityToAdd.setMetadataCollectionName(metadataCollectionName);
 
                 try {
-                     embeddedMetadataCollection.saveEntityReferenceCopy(
+                     metadataCollection.saveEntityReferenceCopy(
                             "userId",
-                           entityToAdd);
-//                    System.err.println("saveEntityReferenceCopy completed with no error");
+                             entityToAdd);
                 } catch (InvalidParameterException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
                 } catch (RepositoryErrorException e) {
@@ -252,14 +260,10 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 } catch (FunctionNotSupportedException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
                 } catch (UserNotAuthorizedException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORISED_EXCEPTION, methodName, e);
+                    raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
                 }
-
             }
-
-
         }
-
     }
 
 
