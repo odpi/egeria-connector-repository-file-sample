@@ -207,7 +207,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                         final String attribute2Description     = "Last known modification time.";
                  */
                 EntityDetail entityToAdd= new EntityDetail();
-                String guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes());
+                String guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes(UTF_8));' or 'String guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes(Charset.defaultCharset()));
                 entityToAdd.setGUID(guid);
                 entityToAdd.setProperties(initialProperties);
                 entityToAdd.setStatus(InstanceStatus.ACTIVE);
