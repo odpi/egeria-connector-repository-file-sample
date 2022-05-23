@@ -16,7 +16,7 @@ import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.TypeDef;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceType;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceProvenanceType;
-
+import java.io.UnsupportedEncodingException;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
@@ -207,7 +207,12 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                         final String attribute2Description     = "Last known modification time.";
                  */
                 EntityDetail entityToAdd= new EntityDetail();
-                String guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes());
+                String guid = null;
+                try {
+                    Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF_8"));
+                } catch (UnsupportedEncodingException e) {
+                    // TODO
+                }
                 entityToAdd.setGUID(guid);
                 entityToAdd.setProperties(initialProperties);
                 entityToAdd.setStatus(InstanceStatus.ACTIVE);
