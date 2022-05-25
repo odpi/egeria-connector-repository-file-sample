@@ -13,9 +13,9 @@ import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollec
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.EntityDetail;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceStatus;
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.TypeDef;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceType;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceProvenanceType;
+import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.*;
+import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.*;
+
 import java.io.UnsupportedEncodingException;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -55,22 +55,22 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
 
     private final List<String> supportedTypeNames = Arrays.asList(new String[]{
-                                                                                // entity types
-                                                                                "DataStore", // super type of Datafile
-                                                                                "Asset", // super type of Datastore
-                                                                                "Referenceable", // super type of the others
-                                                                                "OpenMetadataRoot", // super type of referenceable
-                                                                                "DataFile",
-                                                                                "Connection",
-                                                                                "ConnectorType",
-                                                                                "Endpoint",
-                                                                                // relationship types
-                                                                                "ConnectionEndpoint",
-                                                                                "ConnectionConnectorType",
-                                                                                "ConnectionToAsset"
-                                                                                // classification types
-                                                                                // none at this time
-                                                                                });
+            // entity types
+            "DataStore", // super type of Datafile
+            "Asset", // super type of Datastore
+            "Referenceable", // super type of the others
+            "OpenMetadataRoot", // super type of referenceable
+            "DataFile",
+            "Connection",
+            "ConnectorType",
+            "Endpoint",
+            // relationship types
+            "ConnectionEndpoint",
+            "ConnectionConnectorType",
+            "ConnectionToAsset"
+            // classification types
+            // none at this time
+    });
 
     private String folderLocation;
 
@@ -147,57 +147,183 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
         String methodName = "refreshRepository";
         File folder = new File(getFolderLocation());
 
-        if(!folder.exists()){
+        if (!folder.exists()) {
             raiseConnectorCheckedException(FileOMRSErrorCode.FOLDER_DOES_NOT_EXIST, methodName, null, folder.getName());
-        } else if(!folder.isDirectory()) {
+        } else if (!folder.isDirectory()) {
             raiseConnectorCheckedException(FileOMRSErrorCode.NOT_A_FOLDER, methodName, null, folder.getName());
         } else {
             File[] dataFiles = folder.listFiles();
 
             try {
-                FileOMRSMetadataCollection fileMetadataCollection = (FileOMRSMetadataCollection)getMetadataCollection();
+                FileOMRSMetadataCollection fileMetadataCollection = (FileOMRSMetadataCollection) getMetadataCollection();
                 fileMetadataCollection.getEmbeddedMetadataCollection();
-            } catch( RepositoryErrorException e) {
+            } catch (RepositoryErrorException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.UNABLE_TO_INITIALISE_CACHE, methodName, e);
             }
-            InstanceProperties initialProperties=null;
-            for (File dataFile:dataFiles) {
+
+            for (File dataFile : dataFiles) {
                 // add data file entity
-                String canonicalName= null;
-                String name=null;
-                    try {
-                        canonicalName = dataFile.getCanonicalPath();
-                        name = dataFile.getName();
-                    } catch (IOException e) {
-                        raiseConnectorCheckedException(FileOMRSErrorCode.IOEXCEPTION_ACCESSING_FILE, methodName, e);
-                    }
+                String baseCanonicalName = null;
+                String baseName = null;
+                try {
+                    baseCanonicalName = dataFile.getCanonicalPath();
+                    baseName = dataFile.getName();
+                } catch (IOException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.IOEXCEPTION_ACCESSING_FILE, methodName, e);
+                }
+                int lastDotIndex = baseName.lastIndexOf(".");
+                String fileType = null;
+                if (baseName.length() > 2 && lastDotIndex != -1 && lastDotIndex < baseName.length() - 1) {
+                    // if we can see a file type then add then add as an attribute
+                    fileType = baseName.substring(lastDotIndex + 1);
+                }
+                String dataFileGuid = null;
+                try {
+                    dataFileGuid = Base64.getUrlEncoder().encodeToString(baseCanonicalName.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                }
+                EntityDetail dataFileEntity = getEntityDetail("DataFile",
+                                                              dataFileGuid,
+                                                              baseName,
+                                                              baseCanonicalName,
+                                                              fileType);
+                issueSaveEntityReferenceCopy(dataFileEntity);
 
-                    initialProperties= repositoryHelper.addStringPropertyToInstance("refreshRepository",
-                                                                                     null,
-                                                                                     "name",
-                                                                                     name,
-                                                                                     "refreshRepository");
-                    initialProperties = repositoryHelper.addStringPropertyToInstance("refreshRepository",
-                                                                                     initialProperties,
-                                                                                     "qualifiedName",
-                                                                                     canonicalName,  // TODO prefix
-                                                                                     "refreshRepository");
-//                    initialProperties = repositoryHelper.addStringPropertyToInstance("refreshRepository",
-//                                                                                     initialProperties,
-//                                                                                     "guid",
-//                                                                                     canonicalName,    //dodo generate a unique quid.
-//                                                                                     "refreshRepository");
-                    int lastDotIndex = name.lastIndexOf(".");
-                    if (name.length() >2 && lastDotIndex != -1 && lastDotIndex < name.length()-1) {
-                        // if we can see a file type then add then add as an attribute
-                        String fileType = name.substring(lastDotIndex+1 );
-                        repositoryHelper.addStringPropertyToInstance("refreshRepository",
-                                                                     initialProperties,
-                                                                     "fileType",
-                                                                     fileType,
-                                                                     "refreshRepository");
-                    }
+                String name = baseName + "-connection";
+                String canonicalName = baseCanonicalName + "-connection";
+                String connectionGuid = null;
+                try {
+                    connectionGuid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                }
+                EntityDetail connectionEntity = getEntityDetail("Connection",
+                                                                connectionGuid,
+                                                                name,
+                                                                canonicalName,
+                                                                null);
+                // TODO add more connection attributes?
+                issueSaveEntityReferenceCopy(connectionEntity);
 
+                name = baseName + "-connectortype";
+                canonicalName = baseCanonicalName + "-connectortype";
+                String connectionTypeGuid = null;
+                try {
+                    connectionTypeGuid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                }
+                EntityDetail connectionTypeEntity = getEntityDetail("ConnectionType",
+                                                                    connectionTypeGuid,
+                                                                    name,
+                                                                    canonicalName,
+                                                                    null);
+                // TODO add more connection attributes?
+                issueSaveEntityReferenceCopy(connectionTypeEntity);
+
+
+                name = baseName + "-endpoint";
+                canonicalName = baseCanonicalName + "-endpoint";
+                String endpointGuid = null;
+                try {
+                    endpointGuid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                }
+                EntityDetail endpointEntity = getEntityDetail("Endpoint",
+                                                              endpointGuid,
+                                                              name,
+                                                              canonicalName,
+                                                              null);
+                InstanceProperties instanceProperties = endpointEntity.getProperties();
+                repositoryHelper.addStringPropertyToInstance(methodName,
+                                                             null,
+                                                             "protocol",
+                                                             "file",
+                                                             methodName);
+                repositoryHelper.addStringPropertyToInstance(methodName,
+                                                             null,
+                                                             "networkAddress",
+                                                             baseCanonicalName,
+                                                             methodName);
+                endpointEntity.setProperties(instanceProperties);
+
+
+                // TODO add more endpoint attributes
+                issueSaveEntityReferenceCopy(endpointEntity);
+
+                // create relationships
+
+//                        "ConnectionEndpoint",
+//                        "ConnectionConnectorType",
+//                        "ConnectionToAsset"
+                Relationship connectionToAsset = null;
+                try {
+                    connectionToAsset = repositoryHelper.getSkeletonRelationship(methodName,
+                                                                                 metadataCollectionId,
+                                                                                 InstanceProvenanceType.LOCAL_COHORT,
+                                                                                 "userId",
+                                                                                 "ConnectionToAsset");
+                } catch (TypeErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+                }
+
+                String connectionToAssetCanonicalName = dataFileGuid + "::ConnectionToAsset::" + connectionGuid;
+                String connectionToAssetGuid = null;
+                try {
+                    connectionToAssetGuid = Base64.getUrlEncoder().encodeToString(connectionToAssetCanonicalName.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                }
+
+                connectionToAsset.setGUID(connectionToAssetGuid);
+                //end 1
+                TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "Connection");
+                InstanceType type = null;
+                try {
+                    type = repositoryHelper.getNewInstanceType(methodName, typeDefSummary);
+                } catch (TypeErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+                }
+                EntityProxy entityProxy1 = getEntityProxy(connectionTypeGuid, type);
+                connectionToAsset.setEntityOneProxy(entityProxy1);
+
+                //end 2
+                typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "DataFile");
+                type = null;
+                try {
+                    type = repositoryHelper.getNewInstanceType(methodName, typeDefSummary);
+                } catch (TypeErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+                }
+                EntityProxy entityProxy2 = getEntityProxy(dataFileGuid, type);
+                connectionToAsset.setEntityTwoProxy(entityProxy2);
+                try {
+                    metadataCollection.saveRelationshipReferenceCopy(
+                            "userId",
+                            connectionToAsset);
+                } catch (InvalidParameterException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
+                } catch (RepositoryErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
+                } catch (TypeErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+                } catch (EntityNotKnownException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_NOT_KNOWN, methodName, e);
+                }   catch (PropertyErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e);
+                }   catch (HomeRelationshipException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.HOME_RELATIONSHIP_ERROR_EXCEPTION, methodName, e);
+                } catch (RelationshipConflictException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.RELATIONSHIP_CONFLICT_ERROR_EXCEPTION, methodName, e);
+                } catch (InvalidRelationshipException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_RELATIONSHIP_ERROR_EXCEPTION, methodName, e);
+                } catch (FunctionNotSupportedException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
+                } catch (UserNotAuthorizedException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
+                }
 
                 /*
                     TODO add
@@ -206,63 +332,97 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                         final String attribute2Name            = "modifiedTime";
                         final String attribute2Description     = "Last known modification time.";
                  */
-                EntityDetail entityToAdd= new EntityDetail();
-                String guid = null;
-                try {
-                    guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    System.err.println("Error UnsupportedEncodingException " + e.getMessage());
-                }
-                entityToAdd.setGUID(guid);
-                entityToAdd.setProperties(initialProperties);
-                entityToAdd.setStatus(InstanceStatus.ACTIVE);
-                Instant instant = Instant.now();
-                long timeStampMillis = instant.toEpochMilli();
-                entityToAdd.setVersion(timeStampMillis);
-                // TODO set repository Name from config if we have one in the embedded connection
-                String repositoryName= metadataCollectionName+"-embedded";
-                TypeDef typeDef = repositoryHelper.getTypeDefByName(repositoryName, "DataFile");
-                try {
-                    InstanceType instanceType = repositoryHelper.getNewInstanceType(repositoryName, typeDef);
-                    entityToAdd.setType(instanceType);
-                } catch (TypeErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-                }
 
-                // set the provenance as local cohort
-                InstanceProvenanceType instanceProvenanceType = InstanceProvenanceType.LOCAL_COHORT;
-                entityToAdd.setInstanceProvenanceType(instanceProvenanceType);
-                entityToAdd.setMetadataCollectionId(metadataCollectionId);
-                entityToAdd.setMetadataCollectionName(metadataCollectionName);
+            }
+        }
+    }
+    private EntityProxy getEntityProxy(String guid, InstanceType type)
+    {
+        EntityProxy proxy = new EntityProxy();
+        proxy.setType(type);
+        proxy.setGUID(guid);
+        return proxy;
+    }
 
-                try {
-                     metadataCollection.saveEntityReferenceCopy(
-                            "userId",
-                             entityToAdd);
-                } catch (InvalidParameterException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
-                } catch (RepositoryErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
-                } catch (TypeErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-                } catch (PropertyErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e);
+    private EntityDetail  getEntityDetail(String typeName,
+                                          String guid,
+                                          String name,
+                                          String canonicalName,
+                                          String fileType) throws ConnectorCheckedException {
+        String methodName = "getEntityDetail";
+
+        InstanceProperties       initialProperties= repositoryHelper.addStringPropertyToInstance(methodName,
+                                                                                                 null,
+                                                                                                 "name",
+                                                                                                 name,
+                                                                                                 methodName);
+        initialProperties = repositoryHelper.addStringPropertyToInstance(methodName,
+                                                                         initialProperties,
+                                                                         "qualifiedName",
+                                                                         canonicalName,  // TODO prefix
+                                                                         methodName);
+
+        if (fileType != null) {
+            repositoryHelper.addStringPropertyToInstance(methodName,
+                                                         initialProperties,
+                                                         "fileType",
+                                                         fileType,
+                                                         methodName);
+        }
+        EntityDetail entityToAdd =new EntityDetail();
+        entityToAdd.setProperties(initialProperties);
+
+        // set the provenance as local cohort
+        entityToAdd.setInstanceProvenanceType(InstanceProvenanceType.LOCAL_COHORT);
+        entityToAdd.setMetadataCollectionId(metadataCollectionId);
+        entityToAdd.setMetadataCollectionName(metadataCollectionName);
+        String repositoryName= metadataCollectionName+"-embedded";
+        TypeDef typeDef = repositoryHelper.getTypeDefByName(repositoryName, typeName);
+        try {
+            InstanceType instanceType = repositoryHelper.getNewInstanceType(repositoryName, typeDef);
+            entityToAdd.setType(instanceType);
+        } catch (TypeErrorException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+        }
+
+        entityToAdd.setGUID(guid);
+        entityToAdd.setStatus(InstanceStatus.ACTIVE);
+        Instant instant = Instant.now();
+        long timeStampMillis = instant.toEpochMilli();
+        entityToAdd.setVersion(timeStampMillis);
+
+        return entityToAdd;
+
+    }
+    private void issueSaveEntityReferenceCopy(EntityDetail entityToAdd) throws ConnectorCheckedException {
+        String methodName = "issueSaveEntityReferenceCopy";
+
+        try {
+            metadataCollection.saveEntityReferenceCopy(
+                    "userId",
+                    entityToAdd);
+        } catch (InvalidParameterException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
+        } catch (RepositoryErrorException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
+        } catch (TypeErrorException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+        } catch (PropertyErrorException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e);
 //                } catch (ClassificationErrorException e) {
 //                    raiseConnectorCheckedException(FileOMRSErrorCode.CLASSIFICATION_ERROR_EXCEPTION, methodName, e);
 //                } catch (StatusNotSupportedException e) {
 //                    raiseConnectorCheckedException(FileOMRSErrorCode.STATUS_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
-                } catch (HomeEntityException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.HOME_ENTITY_ERROR_EXCEPTION, methodName, e);
-                } catch (EntityConflictException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_CONFLICT_ERROR_EXCEPTION, methodName, e);
-                } catch (InvalidEntityException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_ENTITY_ERROR_EXCEPTION, methodName, e);
-                } catch (FunctionNotSupportedException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
-                } catch (UserNotAuthorizedException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
-                }
-            }
+        } catch (HomeEntityException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.HOME_ENTITY_ERROR_EXCEPTION, methodName, e);
+        } catch (EntityConflictException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_CONFLICT_ERROR_EXCEPTION, methodName, e);
+        } catch (InvalidEntityException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_ENTITY_ERROR_EXCEPTION, methodName, e);
+        } catch (FunctionNotSupportedException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
+        } catch (UserNotAuthorizedException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
         }
     }
 
@@ -308,13 +468,13 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     private void raiseConnectorCheckedException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws ConnectorCheckedException {
         if (cause == null) {
             throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
+                                                this.getClass().getName(),
+                                                methodName);
         } else {
             throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
+                                                this.getClass().getName(),
+                                                methodName,
+                                                cause);
         }
     }
 
@@ -329,13 +489,13 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RepositoryErrorException {
         if (cause == null) {
             throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName);
+                                               this.getClass().getName(),
+                                               methodName);
         } else {
             throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                    this.getClass().getName(),
-                    methodName,
-                    cause);
+                                               this.getClass().getName(),
+                                               methodName,
+                                               cause);
         }
     }
 
