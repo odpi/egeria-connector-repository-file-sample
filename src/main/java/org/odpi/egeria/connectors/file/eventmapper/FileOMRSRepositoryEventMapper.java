@@ -197,7 +197,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             String methodName = "getEntityDetail";
             EntityDetail entityDetail = null;
             try {
-                entityDetail = fileMetadataCollection.getEntityDetail("Userid", guid);
+                entityDetail = fileMetadataCollection.getEntityDetail(userId, guid);
             } catch (InvalidParameterException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
             } catch (RepositoryErrorException e) {
