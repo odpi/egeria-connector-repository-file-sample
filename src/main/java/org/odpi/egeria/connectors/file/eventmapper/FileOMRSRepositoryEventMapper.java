@@ -9,13 +9,12 @@ import org.odpi.egeria.connectors.file.repositoryconnector.FileOMRSMetadataColle
 import org.odpi.egeria.connectors.file.repositoryconnector.FileOMRSRepositoryConnector;
 
 import org.odpi.openmetadata.repositoryservices.events.OMRSInstanceEvent;
+
 import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectorCheckedException;
 import org.odpi.openmetadata.repositoryservices.connectors.openmetadatatopic.OpenMetadataTopicListener;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.*;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.AttributeTypeDef;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.TypeDefCategory;
+import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.*;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryeventmapper.OMRSRepositoryEventMapperBase;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceGraph;
 
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.TypeErrorException;
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.ClassificationErrorException;
@@ -141,10 +140,79 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                 auditLog.logMessage("stop", FileOMRSAuditCode.POLLING_THREAD_INFO_ALREADY_STOPPED.getMessageDefinition());
             }
         }
-//        void processEvent(String event) {
+
+        //        void processEvent(String event) {
 //            //no op
 //        }
+        private List<EntityDetail> getEntitiesByType(String typeName) throws ConnectorCheckedException {
+            String methodName = "getEntitiesByType(String typeName)";
+            List<EntityDetail> entityDetails = null;
+            try {
+                entityDetails = getEntitiesByTypeGuid(typeName);
+            } catch (InvalidParameterException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            } catch (RepositoryErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            } catch (TypeErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            } catch (PropertyErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            } catch (PagingErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.PAGING_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            } catch (FunctionNotSupportedException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            } catch (UserNotAuthorizedException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
+            }
+            return entityDetails;
+        }
 
+        private List<Relationship> getRelationshipsForEntityHelper(
+                String entityGUID,
+                String relationshipTypeGUID) throws ConnectorCheckedException {
+            String methodName = "getRelationshipsForEntityHelper";
+            List<Relationship> relationships = null;
+            try {
+                relationships = fileMetadataCollection.getRelationshipsForEntity("userId", entityGUID, relationshipTypeGUID, 0, null, null, null, null, 0);
+            } catch (InvalidParameterException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (RepositoryErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (TypeErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (PropertyErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (PagingErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.PAGING_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (FunctionNotSupportedException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (UserNotAuthorizedException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (EntityNotKnownException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_NOT_KNOWN, methodName, e, fileRepositoryConnector.getServerName(), methodName, entityGUID);
+            }
+            return relationships;
+        }
+        private EntityDetail getEntityDetail(String userId, String guid) throws ConnectorCheckedException {
+            String methodName = "getEntityDetail";
+            EntityDetail entityDetail = null;
+            try {
+                entityDetail = fileMetadataCollection.getEntityDetail("Userid", guid);
+            } catch (InvalidParameterException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (RepositoryErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (UserNotAuthorizedException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName(), methodName);
+            } catch (EntityNotKnownException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_NOT_KNOWN, methodName, e, fileRepositoryConnector.getServerName(), methodName, guid);
+            } catch (EntityProxyOnlyException e){
+                raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_PROXY_ONLY, methodName, e, fileRepositoryConnector.getServerName(), methodName, guid);
+            }
+            return entityDetail;
+
+
+            }
         /**
          * Read File.
          */
@@ -221,25 +289,10 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //
                             // call the repository connector to refresh its contents.
                             fileRepositoryConnector.refreshRepository();
-                            List<EntityDetail > dataFiles = null;
-                            try {
-                                dataFiles = getEntitiesByTypeGuid("DataFile");
-                            } catch (InvalidParameterException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            } catch (RepositoryErrorException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            } catch (TypeErrorException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            } catch (PropertyErrorException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            } catch (PagingErrorException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.PAGING_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            } catch (FunctionNotSupportedException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            }
-                            catch (UserNotAuthorizedException e) {
-                                raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e, fileRepositoryConnector.getServerName());
-                            }
+                            List<EntityDetail> dataFiles = getEntitiesByType("DataFile");
+                           // List<EntityDetail> connections = getEntitiesByType("Connection");
+
+
 ///Users/davidradley/egeria-connector-repository-file-sample/src/main/java/org/odpi/egeria/connectors/file/eventmapper/FileOMRSRepositoryEventMapper.java:218: error: unreported exception ConnectorCheckedException; must be caught or declared to be thrown
 //                    fileRepositoryConnector.refreshRepository();
 //                                                                 ^
@@ -258,9 +311,25 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                 List<Relationship> relationshipList = new ArrayList<>();
                                 List<EntityDetail> entityList = new ArrayList<>();
                                 entityList.add(dataFile);
+                                TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "ConnectionToAsset");
+                                String relationshipTypeGUID = typeDefSummary.getGUID();
+                                String entityGUID = dataFile.getGUID();
+                                List<Relationship> connectionToAssetRelationships = getRelationshipsForEntityHelper(entityGUID, relationshipTypeGUID);
+                                relationshipList = connectionToAssetRelationships;
+                                for (Relationship relationship: relationshipList) {
+                                    EntityProxy proxy = repositoryHelper.getOtherEnd(methodName,
+                                           dataFile.getGUID(),
+                                           relationship);
+                                    EntityDetail connection = getEntityDetail("Userid", proxy.getGUID());
+                                    entityList.add(connection);
+                                }
+
+
                                 // Audit log per file.
                                 //  auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_ABOUT_TO_REFRESH.getMessageDefinition());
                                 // TODO fill in the lists
+
+
                                 InstanceGraph instances = new InstanceGraph(entityList, relationshipList);
 
                                 // send the event
@@ -323,6 +392,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         0);
             }
         }
+
 
         // Uncomment when we start to use this method
 //        private List<Relationship> getRelationshipsByTypeGuid(String typeName) throws

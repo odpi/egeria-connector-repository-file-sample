@@ -25,6 +25,26 @@ import java.time.Instant;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * This sample repository connector is implmented to show a polling pattern against a file system.
+ * The polling call is initiated from FileOMRSRepositoryEventMapper using a refreshRepository call.
+ *
+ * Being a repository connector - it exposes the OMRS API.
+ * As ususal, the OMRS API is implemented in a metadata collection.
+ * This class implments a second embedded metadata collection, this is an Egeria native repository that is defined in the configuration.
+ *
+ * The outer metadata collection is the only metadata collection id that the collection rest APIs recognise.
+ * The embedded metadata collection has a different metadata collection id. This will be the outer metadata collection id appeneded with -embedded, or it's
+ * value will come from the embedded collection id in the config (if there is one).
+ *
+ * The refreshRepository call will populate the content of the 3rd party technilogy (in this example Files) in the the embedded repository as reference copies.
+ * The reference copies will containt the outer metadata collection id as their home.
+ *
+ * Queries to this connector will come to the outer collection and be delegated down to the embedded collection , the results of the queries are amended to contain
+ * the outer metadata collection id.
+ *
+ *
+ */
 public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
 //    private static final Logger log = LoggerFactory.getLogger(org.odpi.egeria.connectors.file.repositoryconnector.FileOMRSRepositoryConnector.class);
@@ -51,9 +71,6 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     });
 
 
-
-
-
     private final List<String> supportedTypeNames = Arrays.asList(new String[]{
             // entity types
             "DataStore", // super type of Datafile
@@ -73,6 +90,8 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     });
 
     private String folderLocation;
+//    private String embeddedRepositoryName =null;
+//    private String embeddedMetadataCollectionId = null;
 
     /**
      * Default constructor used by the OCF Connector Provider.
@@ -183,7 +202,8 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 } catch (UnsupportedEncodingException e) {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
-                EntityDetail dataFileEntity = getEntityDetail("DataFile",
+                EntityDetail dataFileEntity = getEntityDetailSkeleton(methodName,
+                                                              "DataFile",
                                                               dataFileGuid,
                                                               baseName,
                                                               baseCanonicalName,
@@ -198,24 +218,27 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 } catch (UnsupportedEncodingException e) {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
-                EntityDetail connectionEntity = getEntityDetail("Connection",
+                EntityDetail connectionEntity = getEntityDetailSkeleton(methodName,
+                                                                "Connection",
                                                                 connectionGuid,
                                                                 name,
                                                                 canonicalName,
                                                                 null);
+                System.err.println("connection reference copy is " + connectionEntity.toString() );
                 // TODO add more connection attributes?
                 issueSaveEntityReferenceCopy(connectionEntity);
 
                 name = baseName + "-connectortype";
                 canonicalName = baseCanonicalName + "-connectortype";
-                String connectionTypeGuid = null;
+                String connectorTypeGuid = null;
                 try {
-                    connectionTypeGuid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
+                    connectorTypeGuid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
                 } catch (UnsupportedEncodingException e) {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
-                EntityDetail connectionTypeEntity = getEntityDetail("ConnectionType",
-                                                                    connectionTypeGuid,
+                EntityDetail connectionTypeEntity = getEntityDetailSkeleton(methodName,
+                                                                    "ConnectorType",
+                                                                    connectorTypeGuid,
                                                                     name,
                                                                     canonicalName,
                                                                     null);
@@ -231,7 +254,8 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                 } catch (UnsupportedEncodingException e) {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
-                EntityDetail endpointEntity = getEntityDetail("Endpoint",
+                EntityDetail endpointEntity = getEntityDetailSkeleton(methodName,
+                                                              "Endpoint",
                                                               endpointGuid,
                                                               name,
                                                               canonicalName,
@@ -279,26 +303,13 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
                 connectionToAsset.setGUID(connectionToAssetGuid);
                 //end 1
-                TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "Connection");
-                InstanceType type = null;
-                try {
-                    type = repositoryHelper.getNewInstanceType(methodName, typeDefSummary);
-                } catch (TypeErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-                }
-                EntityProxy entityProxy1 = getEntityProxy(connectionTypeGuid, type);
+                EntityProxy entityProxy1 = getEntityProxySkeleton(connectorTypeGuid, "Connection");
                 connectionToAsset.setEntityOneProxy(entityProxy1);
 
                 //end 2
-                typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "DataFile");
-                type = null;
-                try {
-                    type = repositoryHelper.getNewInstanceType(methodName, typeDefSummary);
-                } catch (TypeErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-                }
-                EntityProxy entityProxy2 = getEntityProxy(dataFileGuid, type);
+                EntityProxy entityProxy2 = getEntityProxySkeleton(dataFileGuid, "DataFile");
                 connectionToAsset.setEntityTwoProxy(entityProxy2);
+                System.err.println("connectionToAsset reference copy is " + connectionToAsset.toString() );
                 try {
                     metadataCollection.saveRelationshipReferenceCopy(
                             "userId",
@@ -336,15 +347,26 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
             }
         }
     }
-    private EntityProxy getEntityProxy(String guid, InstanceType type)
+    private EntityProxy getEntityProxySkeleton(String guid, String typeName) throws ConnectorCheckedException
     {
+        String methodName = "getEntityProxySkeleton";
         EntityProxy proxy = new EntityProxy();
+        TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "Connection");
+        InstanceType type = null;
+        try {
+            type = repositoryHelper.getNewInstanceType(methodName, typeDefSummary);
+        } catch (TypeErrorException e) {
+            raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+        }
         proxy.setType(type);
         proxy.setGUID(guid);
+        proxy.setMetadataCollectionId(metadataCollectionId);
+        proxy.setMetadataCollectionName(metadataCollectionName);
         return proxy;
     }
 
-    private EntityDetail  getEntityDetail(String typeName,
+    private EntityDetail  getEntityDetailSkeleton(String originalMethodName,
+                                          String typeName,
                                           String guid,
                                           String name,
                                           String canonicalName,
@@ -376,9 +398,16 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
         entityToAdd.setInstanceProvenanceType(InstanceProvenanceType.LOCAL_COHORT);
         entityToAdd.setMetadataCollectionId(metadataCollectionId);
         entityToAdd.setMetadataCollectionName(metadataCollectionName);
-        String repositoryName= metadataCollectionName+"-embedded";
+
         TypeDef typeDef = repositoryHelper.getTypeDefByName(repositoryName, typeName);
+
         try {
+            if (typeDef == null) {
+                System.err.println("Typename cannot be found " + typeName);
+                throw new TypeErrorException(FileOMRSErrorCode.TYPEDEF_NAME_NOT_KNOWN.getMessageDefinition(typeName, originalMethodName, methodName),
+                                             this.getClass().getName(),
+                                             originalMethodName);
+            }
             InstanceType instanceType = repositoryHelper.getNewInstanceType(repositoryName, typeDef);
             entityToAdd.setType(instanceType);
         } catch (TypeErrorException e) {
@@ -396,6 +425,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     }
     private void issueSaveEntityReferenceCopy(EntityDetail entityToAdd) throws ConnectorCheckedException {
         String methodName = "issueSaveEntityReferenceCopy";
+        System.err.println("issueSaveEntityReferenceCopy " +entityToAdd);
 
         try {
             metadataCollection.saveEntityReferenceCopy(
@@ -449,6 +479,8 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                                                                 auditLog
 
             );
+            //TODO get from embedded connecion config if there.
+//            embeddedRepositoryName= metadataCollectionName+"-embedded";
         }
     }
 

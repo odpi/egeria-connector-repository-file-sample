@@ -39,7 +39,7 @@ import java.util.*;
 
 public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionBase {
 
-
+    OMRSRepositoryConnector embeddedConnector = null;
     OMRSMetadataCollection embeddedMetadataCollection = null;
 
     /**
@@ -75,7 +75,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
 
         this.metadataCollectionId = metadataCollectionId;
         try {
-            OMRSRepositoryConnector embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper,
+            this.embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper,
                                                                                               repositoryValidator);
             this.embeddedMetadataCollection = embeddedConnector.getMetadataCollection();
         } catch (ConnectionCheckedException e) {
@@ -102,6 +102,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
         embeddedConnector.setRepositoryValidator(repositoryValidator);
         // this collection id is never stored in an entity as we ony populate the repo with reference copies
         embeddedConnector.setMetadataCollectionId(metadataCollectionId+"-embedded");
+        embeddedConnector.setMetadataCollectionName(metadataCollectionName+"-embedded");
         embeddedConnector.start();
 
         return embeddedConnector;
@@ -126,27 +127,63 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
                                                cause);
         }
     }
+//    private EntityDetail setOuterMetadataCollectionInformation(EntityDetail entity) {
+//        if (entity == null) {
+//            return null;
+//        }
+//        entity.setMetadataCollectionId(metadataCollectionId);
+//        entity.setMetadataCollectionName(metadataCollectionName);
+//        return entity;
+//    }
+//    private EntitySummary setOuterMetadataCollectionInformation(EntitySummary entity) {
+//        if (entity == null) {
+//            return null;
+//        }
+//        entity.setMetadataCollectionId(metadataCollectionId);
+//        entity.setMetadataCollectionName(metadataCollectionName);
+//        return entity;
+//    }
+//    private List<EntityDetail> setOuterMetadataCollectionInformation(List<EntityDetail> entities) {
+//        if (entities == null) {
+//            return null;
+//        }
+//        List<EntityDetail> list = new ArrayList<>();
+//        for (EntityDetail entityDetail: entities) {
+//            EntityDetail newEntityDetail = setOuterMetadataCollectionInformation( entityDetail);
+//            list.add(newEntityDetail);
+//        }
+//        return list;
+//    }
+
 
     // ** Delegate all the collection methods we care about to the embedded connector collection.
     // Currently only read orientated calls in groups 3 and 4 are implmented. See OMRSMetadataCollection class for the meaning of the groups.
 
     @Override
     public EntityDetail isEntityKnown(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, UserNotAuthorizedException {
+//        EntityDetail entityDetail = embeddedMetadataCollection.isEntityKnown(userId, guid);
+//        return setOuterMetadataCollectionInformation(entityDetail);
         return embeddedMetadataCollection.isEntityKnown(userId, guid);
     }
 
     @Override
     public EntitySummary getEntitySummary(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, UserNotAuthorizedException {
+//        EntitySummary entitySummary = embeddedMetadataCollection.getEntitySummary(userId, guid);
+//        return setOuterMetadataCollectionInformation(entitySummary);
         return embeddedMetadataCollection.getEntitySummary(userId, guid);
     }
 
     @Override
     public EntityDetail getEntityDetail(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, UserNotAuthorizedException {
+//        EntityDetail entityDetail =  embeddedMetadataCollection.getEntityDetail(userId, guid);
+//        return setOuterMetadataCollectionInformation(entityDetail);
         return embeddedMetadataCollection.getEntityDetail(userId, guid);
     }
 
     @Override
     public EntityDetail getEntityDetail(String userId, String guid, Date asOfTime) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, FunctionNotSupportedException, UserNotAuthorizedException {
+//        EntityDetail entityDetail = embeddedMetadataCollection.getEntityDetail(userId, guid, asOfTime);
+//        return setOuterMetadataCollectionInformation(entityDetail);
         return embeddedMetadataCollection.getEntityDetail(userId, guid, asOfTime);
     }
 
@@ -163,7 +200,20 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
     @Override
     public List<EntityDetail> findEntities(String userId, String entityTypeGUID, List<String> entitySubtypeGUIDs, SearchProperties matchProperties, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, SearchClassifications matchClassifications, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
 
-            return embeddedMetadataCollection.findEntities(userId,
+//        List<EntityDetail> entityDetailList = embeddedMetadataCollection.findEntities(userId,
+//                                                           entityTypeGUID,
+//                                                           entitySubtypeGUIDs,
+//                                                           matchProperties,
+//                                                           fromEntityElement,
+//                                                           limitResultsByStatus,
+//                                                           matchClassifications,
+//                                                           asOfTime,
+//                                                           sequencingProperty,
+//                                                           sequencingOrder,
+//                                                           pageSize);
+//        return setOuterMetadataCollectionInformation(entityDetailList);
+        return
+                embeddedMetadataCollection.findEntities(userId,
                                                            entityTypeGUID,
                                                            entitySubtypeGUIDs,
                                                            matchProperties,
