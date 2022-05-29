@@ -308,14 +308,14 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
                             for (EntityDetail dataFile : dataFiles) {
                                 // create a batch event per file
-                                List<Relationship> relationshipList = new ArrayList<>();
+//                                List<Relationship> relationshipList;
                                 List<EntityDetail> entityList = new ArrayList<>();
                                 entityList.add(dataFile);
                                 TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "ConnectionToAsset");
                                 String relationshipTypeGUID = typeDefSummary.getGUID();
                                 String entityGUID = dataFile.getGUID();
-                                List<Relationship> connectionToAssetRelationships = getRelationshipsForEntityHelper(entityGUID, relationshipTypeGUID);
-                                relationshipList = connectionToAssetRelationships;
+                                List<Relationship> relationshipList = getRelationshipsForEntityHelper(entityGUID, relationshipTypeGUID);
+//                                relationshipList = connectionToAssetRelationships;
                                 for (Relationship relationship: relationshipList) {
                                     EntityProxy proxy = repositoryHelper.getOtherEnd(methodName,
                                            dataFile.getGUID(),
