@@ -351,7 +351,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     {
         String methodName = "getEntityProxySkeleton";
         EntityProxy proxy = new EntityProxy();
-        TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "Connection");
+        TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, typeName);
         InstanceType type = null;
         try {
             type = repositoryHelper.getNewInstanceType(methodName, typeDefSummary);
