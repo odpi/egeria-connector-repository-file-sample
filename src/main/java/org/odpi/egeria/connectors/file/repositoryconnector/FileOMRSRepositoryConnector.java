@@ -196,18 +196,13 @@ private static final String DATA_FILE = "DataFile";
                 } catch (IOException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.IOEXCEPTION_ACCESSING_FILE, methodName, e);
                 }
-                int lastDotIndex = baseName.lastIndexOf(".");
-                String fileType = null;
-                if (baseName.length() > 2 && lastDotIndex != -1 && lastDotIndex < baseName.length() - 1) {
-                    // if we can see a file type then add then add as an attribute
-                    fileType = baseName.substring(lastDotIndex + 1);
-                }
+
+
 
                 EntityDetail dataFileEntity = getEntityDetailSkeleton(methodName,
                                                                       DATA_FILE,
                                                                       baseName,
-                                                                      baseCanonicalName,
-                                                                      fileType);
+                                                                      baseCanonicalName);
                 issueSaveEntityReferenceCopy(dataFileEntity);
 
                 String name = baseName + "-connection";
@@ -216,8 +211,7 @@ private static final String DATA_FILE = "DataFile";
                 EntityDetail connectionEntity = getEntityDetailSkeleton(methodName,
                                                                         CONNECTION,
                                                                         name,
-                                                                        canonicalName,
-                                                                        null);
+                                                                        canonicalName);
                 System.err.println("connection reference copy is " + connectionEntity.toString() );
                 // TODO add more connection attributes?
                 issueSaveEntityReferenceCopy(connectionEntity);
@@ -227,8 +221,7 @@ private static final String DATA_FILE = "DataFile";
                 EntityDetail connectionTypeEntity = getEntityDetailSkeleton(methodName,
                                                                             CONNECTOR_TYPE,
                                                                             name,
-                                                                            canonicalName,
-                                                                            null);
+                                                                            canonicalName);
                 // TODO add more connection attributes?
                 issueSaveEntityReferenceCopy(connectionTypeEntity);
 
@@ -239,8 +232,7 @@ private static final String DATA_FILE = "DataFile";
                 EntityDetail endpointEntity = getEntityDetailSkeleton(methodName,
                                                                       ENDPOINT,
                                                                       name,
-                                                                      canonicalName,
-                                                                      null);
+                                                                      canonicalName);
                 InstanceProperties instanceProperties = endpointEntity.getProperties();
                 repositoryHelper.addStringPropertyToInstance(methodName,
                                                              null,
@@ -381,8 +373,8 @@ private static final String DATA_FILE = "DataFile";
     private EntityDetail  getEntityDetailSkeleton(String originalMethodName,
                                                   String typeName,
                                                   String name,
-                                                  String canonicalName,
-                                                  String fileType) throws ConnectorCheckedException {
+                                                  String canonicalName
+                                                 ) throws ConnectorCheckedException {
         String methodName = "getEntityDetail";
 
         String guid = null;
@@ -402,14 +394,8 @@ private static final String DATA_FILE = "DataFile";
                                                                          "qualifiedName",
                                                                          canonicalName,  // TODO prefix
                                                                          methodName);
+        addTypeSpecificProperties(typeName,   initialProperties);
 
-        if (fileType != null) {
-            repositoryHelper.addStringPropertyToInstance(methodName,
-                                                         initialProperties,
-                                                         "fileType",
-                                                         fileType,
-                                                         methodName);
-        }
         EntityDetail entityToAdd =new EntityDetail();
         entityToAdd.setProperties(initialProperties);
 
@@ -442,6 +428,42 @@ private static final String DATA_FILE = "DataFile";
         return entityToAdd;
 
     }
+
+    private void addTypeSpecificProperties(String typeName, InstanceProperties initialProperties) {
+        String methodName = "addTypeSpecificProperties";
+
+
+        switch (typeName){
+            case "DataFile": {
+                String fileType = null;
+                initialProperties.getInstanceProperties().get("name");
+
+                Map<String, Object> properties=  repositoryHelper.getInstancePropertiesAsMap(initialProperties);
+                String name = (String) properties.get("name");
+
+                int lastDotIndex = name.lastIndexOf(".");
+                if (name.length() > 2 && lastDotIndex != -1 && lastDotIndex < name.length() - 1) {
+                    // if we can see a file type then add as an attribute
+                    fileType = name.substring(lastDotIndex + 1);
+                }
+
+                if (fileType != null) {
+                    repositoryHelper.addStringPropertyToInstance(methodName,
+                                                                 initialProperties,
+                                                                 "fileType",
+                                                                 fileType,
+                                                                 methodName);
+                }
+                break;
+            }
+
+
+        }
+
+
+
+    }
+
     private void issueSaveEntityReferenceCopy(EntityDetail entityToAdd) throws ConnectorCheckedException {
         String methodName = "issueSaveEntityReferenceCopy";
         System.err.println("issueSaveEntityReferenceCopy " +entityToAdd);

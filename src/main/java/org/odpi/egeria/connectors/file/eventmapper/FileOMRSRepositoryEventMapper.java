@@ -219,7 +219,57 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             return entityDetail;
 
 
+        }
+        void sendBatchEvent() throws ConnectorCheckedException {
+            String methodName = "sendBatchEvent";
+            List<EntityDetail> dataFiles = getEntitiesByType(DATA_FILE);
+
+            for (EntityDetail dataFile : dataFiles) {
+
+                List<Relationship> relationshipList = new ArrayList<>();
+                List<EntityDetail> entityList = new ArrayList<>();
+                entityList.add(dataFile);
+                String assetGUID = dataFile.getGUID();
+                List<String> connectionGuids = populateEvent(CONNECTION_TO_ASSET, assetGUID, entityList, relationshipList);
+                if (connectionGuids != null && connectionGuids.size() >0) {
+                    for (String connectionGUID : connectionGuids) {
+                        populateEvent(CONNECTION_CONNECTOR_TYPE, connectionGUID, entityList, relationshipList);
+                        populateEvent(CONNECTION_ENDPOINT, connectionGUID, entityList, relationshipList);
+                    }
+                }
+
+                InstanceGraph instances = new InstanceGraph(entityList, relationshipList);
+
+                // send the event
+                repositoryEventProcessor.processInstanceBatchEvent("FileOMRSRepositoryEventMapper",
+                                                                   fileRepositoryConnector.getMetadataCollectionId(),
+                                                                   fileRepositoryConnector.getServerName(),
+                                                                   fileRepositoryConnector.getServerType(),
+                                                                   fileRepositoryConnector.getOrganizationName(),
+                                                                   instances);
             }
+
+        }
+        private List<String> populateEvent(String relationshipTypeName, String startEntityGUID, List<EntityDetail> entityList, List<Relationship> relationshipList) throws ConnectorCheckedException {
+            String methodName = "populateEvent";
+
+            List<String> otherEndGuids = new ArrayList<>();
+            TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, relationshipTypeName);
+            String relationshipTypeGUID = typeDefSummary.getGUID();
+            List<Relationship> connectorConnectorTypeRelationships = getRelationshipsForEntityHelper(startEntityGUID, relationshipTypeGUID);
+            for (Relationship relationship: connectorConnectorTypeRelationships) {
+                EntityProxy proxy = repositoryHelper.getOtherEnd(methodName,
+                                                                 startEntityGUID,
+                                                                 relationship);
+                String guid = proxy.getGUID();
+                EntityDetail otherEndEntity = getEntityDetail("Userid", guid);
+                entityList.add(otherEndEntity);
+                relationshipList.add(relationship);
+                otherEndGuids.add(otherEndEntity.getGUID());
+            }
+            return otherEndGuids;
+
+        }
         /**
          * Read File.
          */
@@ -296,56 +346,8 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //
                             // call the repository connector to refresh its contents.
                             fileRepositoryConnector.refreshRepository();
-                            List<EntityDetail> dataFiles = getEntitiesByType(DATA_FILE);
-                           // List<EntityDetail> connections = getEntitiesByType("Connection");
+                            sendBatchEvent();
 
-
-///Users/davidradley/egeria-connector-repository-file-sample/src/main/java/org/odpi/egeria/connectors/file/eventmapper/FileOMRSRepositoryEventMapper.java:218: error: unreported exception ConnectorCheckedException; must be caught or declared to be thrown
-//                    fileRepositoryConnector.refreshRepository();
-//                                                                 ^
-///Users/davidradley/egeria-connector-repository-file-sample/src/main/java/org/odpi/egeria/connectors/file/eventmapper/FileOMRSRepositoryEventMapper.java:220: error: unreported exception InvalidParameterException; must be caught or declared to be thrown
-//                            List<EntityDetail> dataFiles = getEntitiesByTypeGuid("DataFile");
-//                    List<EntityDetail> dataManagerEntities = getEntitiesByTypeGuid("Connection");
-//                    List<EntityDetail> folderEntities = getEntitiesByTypeGuid("ConnectorType");
-//                    List<EntityDetail> tabularFileColumnEntities = getEntitiesByTypeGuid( "Endpoint");
-//                    List<Relationship>  connectionEndpointRelationships = getRelationshipsByTypeGuid( "ConnectionEndpoint");
-//                    List<Relationship>  connectionConnectorTypeRelationships = getRelationshipsByTypeGuid( "ConnectionConnectorType");
-//                    List<Relationship>  connectionToAssetRelationship = getRelationshipsByTypeGuid( "ConnectionToAsset");
-
-
-                            for (EntityDetail dataFile : dataFiles) {
-                                // create a batch event per file
-//                                List<Relationship> relationshipList;
-                                List<EntityDetail> entityList = new ArrayList<>();
-                                entityList.add(dataFile);
-                                TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, CONNECTION_TO_ASSET);
-                                String relationshipTypeGUID = typeDefSummary.getGUID();
-                                String entityGUID = dataFile.getGUID();
-                                List<Relationship> relationshipList = getRelationshipsForEntityHelper(entityGUID, relationshipTypeGUID);
-                                for (Relationship relationship: relationshipList) {
-                                    EntityProxy proxy = repositoryHelper.getOtherEnd(methodName,
-                                           dataFile.getGUID(),
-                                           relationship);
-                                    EntityDetail connection = getEntityDetail("Userid", proxy.getGUID());
-                                    entityList.add(connection);
-                                }
-
-
-                                // Audit log per file.
-                                //  auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_ABOUT_TO_REFRESH.getMessageDefinition());
-                                // TODO fill in the lists
-
-
-                                InstanceGraph instances = new InstanceGraph(entityList, relationshipList);
-
-                                // send the event
-                                repositoryEventProcessor.processInstanceBatchEvent("FileOMRSRepositoryEventMapper",
-                                                                                   fileRepositoryConnector.getMetadataCollectionId(),
-                                                                                   fileRepositoryConnector.getServerName(),
-                                                                                   fileRepositoryConnector.getServerType(),
-                                                                                   fileRepositoryConnector.getOrganizationName(),
-                                                                                   instances);
-                            }
                         }
                         //  scope a call /calls to the repository connector for example for a file
                         //  wait the polling interval.
