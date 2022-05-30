@@ -361,7 +361,11 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                             auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_INTERRUPTED_EXCEPTION.getMessageDefinition());
                         }
                     } catch (ConnectorCheckedException e) {
-                        auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION.getMessageDefinition(e.getMessage()));
+                        if (e.getCause() == null) {
+                            auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION.getMessageDefinition(e.getMessage()));
+                        } else {
+                            auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION_WITH_CAUSE.getMessageDefinition(e.getMessage(), e.getCause().getMessage()));
+                        }
                     } finally {
                         // stop the thead if we came out of the loop.
                         this.stop();
