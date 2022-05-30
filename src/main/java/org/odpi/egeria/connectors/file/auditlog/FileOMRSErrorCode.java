@@ -158,6 +158,7 @@ public enum FileOMRSErrorCode implements ExceptionMessageSet {
             "On Server {0} for request {1}, the entity identified with guid {0} is not known to the open metadata repository {2}",
             "The system is unable to retrieve the properties for the requested entity because the supplied guid is not recognized.",
             "The guid is supplied by the caller to the server.  It may have a logic problem that has corrupted the guid, or the entity has been deleted since the guid was retrieved."),
+
     RELATIONSHIP_NOT_KNOWN(404, "OMRS-FILE-REPOSITORY-404-003 ",
             "On Server {0} for request {1}, the relationship identified with guid {2} is not known to the open metadata repository {2}",
             "The system is unable to retrieve the properties for the requested relationship because the supplied guid is not recognized.",

@@ -64,6 +64,13 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //        implements OpenMetadataTopicListener
 {
 
+    private static final String DATA_FILE = "DataFile";
+    private static final String CONNECTION = "Connection";
+    private static final String CONNECTOR_TYPE = "ConnectorType";
+    private static final String ENDPOINT = "Endpoint";
+    private static final String CONNECTION_ENDPOINT = "ConnectionEndpoint";
+    private static final String CONNECTION_CONNECTOR_TYPE = "ConnectionConnectorType";
+    private static final String CONNECTION_TO_ASSET = "ConnectionToAsset";
     //    private static final Logger log = LoggerFactory.getLogger(FileOMRSRepositoryEventMapper.class);
     private final AtomicBoolean running = new AtomicBoolean(false);
     private FileOMRSRepositoryConnector fileRepositoryConnector;
@@ -228,14 +235,14 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         "Asset", // super type of Datastore
                         "Referenceable", // super type of the others
                         "OpenMetadataRoot", // super type of referenceable
-                        "DataFile",
-                        "Connection",
-                        "ConnectorType",
-                        "Endpoint",
+                        DATA_FILE,
+                        CONNECTION,
+                        CONNECTOR_TYPE,
+                        ENDPOINT,
                         // relationship types
-                        "ConnectionEndpoint",
-                        "ConnectionConnectorType",
-                        "ConnectionToAsset"
+                        CONNECTION_ENDPOINT,
+                        CONNECTION_CONNECTOR_TYPE,
+                        CONNECTION_TO_ASSET
                         // classification types
                         // none at this time
                 });
@@ -289,7 +296,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //
                             // call the repository connector to refresh its contents.
                             fileRepositoryConnector.refreshRepository();
-                            List<EntityDetail> dataFiles = getEntitiesByType("DataFile");
+                            List<EntityDetail> dataFiles = getEntitiesByType(DATA_FILE);
                            // List<EntityDetail> connections = getEntitiesByType("Connection");
 
 
@@ -311,11 +318,10 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //                                List<Relationship> relationshipList;
                                 List<EntityDetail> entityList = new ArrayList<>();
                                 entityList.add(dataFile);
-                                TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, "ConnectionToAsset");
+                                TypeDefSummary typeDefSummary = repositoryHelper.getTypeDefByName(methodName, CONNECTION_TO_ASSET);
                                 String relationshipTypeGUID = typeDefSummary.getGUID();
                                 String entityGUID = dataFile.getGUID();
                                 List<Relationship> relationshipList = getRelationshipsForEntityHelper(entityGUID, relationshipTypeGUID);
-//                                relationshipList = connectionToAssetRelationships;
                                 for (Relationship relationship: relationshipList) {
                                     EntityProxy proxy = repositoryHelper.getOtherEnd(methodName,
                                            dataFile.getGUID(),
