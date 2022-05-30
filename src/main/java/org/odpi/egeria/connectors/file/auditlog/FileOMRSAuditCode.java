@@ -120,13 +120,18 @@ public enum FileOMRSAuditCode implements AuditLogMessageSet {
     POLLING_THREAD_INFO_ALREADY_STOPPED("OMRS-FILE-REPOSITORY-0020",
                                         OMRSAuditLogRecordSeverity.INFO,
                                         "The Sample file repository proxy event mapper polling loop thread got an exception",
-                                        "The Sample file repository proxy event mapper's polling thread got an excpetion but its state was already not running.",
-                                        "See otehr audit entries for action."),
-    EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION("OMRS-FILE-REPOSITORY-0021",
+                                        "The Sample file repository proxy event mapper's polling thread got an exception but its state was already not running.",
+                                        "See other audit entries for action."),
+    EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION_WITH_CAUSE("OMRS-FILE-REPOSITORY-0021",
                                             OMRSAuditLogRecordSeverity.EXCEPTION,
-                                            "Error {0} in Event mapper Polling loop ",
+                                            "Error {0} in Event mapper Polling loop, the cause is {1}",
                                             "Connector is unable to be used",
-                                            "Check the logs for the details of the Exception and debug."),
+                                            "Check the cause in the message to see what has occurred."),
+    EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION("OMRS-FILE-REPOSITORY-0022",
+                                                       OMRSAuditLogRecordSeverity.EXCEPTION,
+                                                       "Error {0} in Event mapper Polling loop",
+                                                       "Connector is unable to be used",
+                                                       "Check the logs for the details of the Exception and debug."),
 
     ;
 

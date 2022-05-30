@@ -423,7 +423,7 @@ private static final String DATA_FILE = "DataFile";
         try {
             if (typeDef == null) {
                 System.err.println(methodName + " Typename cannot be found " + typeName);
-                throw new TypeErrorException(FileOMRSErrorCode.TYPEDEF_NAME_NOT_KNOWN.getMessageDefinition(repositoryName, methodName, typeName),
+                throw new TypeErrorException(FileOMRSErrorCode.TYPEDEF_NAME_NOT_KNOWN.getMessageDefinition(metadataCollectionName, methodName, typeName),
                                              this.getClass().getName(),
                                              originalMethodName);
             }
