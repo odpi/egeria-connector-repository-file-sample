@@ -221,7 +221,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
         }
         void sendBatchEvent() throws ConnectorCheckedException {
-            String methodName = "sendBatchEvent";
             List<EntityDetail> dataFiles = getEntitiesByType(DATA_FILE);
 
             for (EntityDetail dataFile : dataFiles) {
