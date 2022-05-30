@@ -203,11 +203,11 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
                 EntityDetail dataFileEntity = getEntityDetailSkeleton(methodName,
-                                                              "DataFile",
-                                                              dataFileGuid,
-                                                              baseName,
-                                                              baseCanonicalName,
-                                                              fileType);
+                                                                      "DataFile",
+                                                                      dataFileGuid,
+                                                                      baseName,
+                                                                      baseCanonicalName,
+                                                                      fileType);
                 issueSaveEntityReferenceCopy(dataFileEntity);
 
                 String name = baseName + "-connection";
@@ -219,11 +219,11 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
                 EntityDetail connectionEntity = getEntityDetailSkeleton(methodName,
-                                                                "Connection",
-                                                                connectionGuid,
-                                                                name,
-                                                                canonicalName,
-                                                                null);
+                                                                        "Connection",
+                                                                        connectionGuid,
+                                                                        name,
+                                                                        canonicalName,
+                                                                        null);
                 System.err.println("connection reference copy is " + connectionEntity.toString() );
                 // TODO add more connection attributes?
                 issueSaveEntityReferenceCopy(connectionEntity);
@@ -237,11 +237,11 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
                 EntityDetail connectionTypeEntity = getEntityDetailSkeleton(methodName,
-                                                                    "ConnectorType",
-                                                                    connectorTypeGuid,
-                                                                    name,
-                                                                    canonicalName,
-                                                                    null);
+                                                                            "ConnectorType",
+                                                                            connectorTypeGuid,
+                                                                            name,
+                                                                            canonicalName,
+                                                                            null);
                 // TODO add more connection attributes?
                 issueSaveEntityReferenceCopy(connectionTypeEntity);
 
@@ -255,11 +255,11 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
                     System.err.println("Error UnsupportedEncodingException " + e.getMessage());
                 }
                 EntityDetail endpointEntity = getEntityDetailSkeleton(methodName,
-                                                              "Endpoint",
-                                                              endpointGuid,
-                                                              name,
-                                                              canonicalName,
-                                                              null);
+                                                                      "Endpoint",
+                                                                      endpointGuid,
+                                                                      name,
+                                                                      canonicalName,
+                                                                      null);
                 InstanceProperties instanceProperties = endpointEntity.getProperties();
                 repositoryHelper.addStringPropertyToInstance(methodName,
                                                              null,
@@ -303,7 +303,7 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
 
                 connectionToAsset.setGUID(connectionToAssetGuid);
                 //end 1
-                EntityProxy entityProxy1 = getEntityProxySkeleton(connectorTypeGuid, "Connection");
+                EntityProxy entityProxy1 = getEntityProxySkeleton(connectionGuid, "Connection");
                 connectionToAsset.setEntityOneProxy(entityProxy1);
 
                 //end 2
@@ -366,11 +366,11 @@ public class FileOMRSRepositoryConnector extends OMRSRepositoryConnector {
     }
 
     private EntityDetail  getEntityDetailSkeleton(String originalMethodName,
-                                          String typeName,
-                                          String guid,
-                                          String name,
-                                          String canonicalName,
-                                          String fileType) throws ConnectorCheckedException {
+                                                  String typeName,
+                                                  String guid,
+                                                  String name,
+                                                  String canonicalName,
+                                                  String fileType) throws ConnectorCheckedException {
         String methodName = "getEntityDetail";
 
         InstanceProperties       initialProperties= repositoryHelper.addStringPropertyToInstance(methodName,
