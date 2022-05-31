@@ -196,13 +196,13 @@ private static final String DATA_FILE = "DataFile";
                 } catch (IOException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.IOEXCEPTION_ACCESSING_FILE, methodName, e);
                 }
-
-
+                Map<String, String> attributeMap = getDataFileProperties(baseName);
 
                 EntityDetail dataFileEntity = getEntityDetailSkeleton(methodName,
                                                                       DATA_FILE,
                                                                       baseName,
-                                                                      baseCanonicalName);
+                                                                      baseCanonicalName,
+                                                                      attributeMap);
                 issueSaveEntityReferenceCopy(dataFileEntity);
 
                 String name = baseName + "-connection";
@@ -369,11 +369,23 @@ private static final String DATA_FILE = "DataFile";
         proxy.setMetadataCollectionName(metadataCollectionName);
         return proxy;
     }
-
     private EntityDetail  getEntityDetailSkeleton(String originalMethodName,
                                                   String typeName,
                                                   String name,
                                                   String canonicalName
+                                                 ) throws ConnectorCheckedException {
+        return getEntityDetailSkeleton(originalMethodName,
+                                typeName,
+                                name,
+                                canonicalName,
+                                       null);
+
+    }
+    private EntityDetail  getEntityDetailSkeleton(String originalMethodName,
+                                                  String typeName,
+                                                  String name,
+                                                  String canonicalName,
+                                                  Map<String, String> attributeMap
                                                  ) throws ConnectorCheckedException {
         String methodName = "getEntityDetail";
 
@@ -394,7 +406,9 @@ private static final String DATA_FILE = "DataFile";
                                                                          "qualifiedName",
                                                                          canonicalName,  // TODO prefix
                                                                          methodName);
-        addTypeSpecificProperties(typeName,   initialProperties);
+        if (attributeMap != null && !attributeMap.keySet().isEmpty()) {
+            addTypeSpecificProperties(initialProperties, attributeMap);
+        }
 
         EntityDetail entityToAdd =new EntityDetail();
         entityToAdd.setProperties(initialProperties);
@@ -428,40 +442,34 @@ private static final String DATA_FILE = "DataFile";
         return entityToAdd;
 
     }
-
-    private void addTypeSpecificProperties(String typeName, InstanceProperties initialProperties) {
+    void addTypeSpecificProperties(InstanceProperties initialProperties, Map<String,String> attributeMap) {
         String methodName = "addTypeSpecificProperties";
-
-
-        switch (typeName){
-            case "DataFile": {
-                String fileType = null;
-                initialProperties.getInstanceProperties().get("name");
-
-                Map<String, Object> properties=  repositoryHelper.getInstancePropertiesAsMap(initialProperties);
-                String name = (String) properties.get("name");
-
-                int lastDotIndex = name.lastIndexOf(".");
-                if (name.length() > 2 && lastDotIndex != -1 && lastDotIndex < name.length() - 1) {
-                    // if we can see a file type then add as an attribute
-                    fileType = name.substring(lastDotIndex + 1);
-                }
-
-                if (fileType != null) {
-                    repositoryHelper.addStringPropertyToInstance(methodName,
+        for (String attributeName : attributeMap.keySet()) {
+                                repositoryHelper.addStringPropertyToInstance(methodName,
                                                                  initialProperties,
-                                                                 "fileType",
-                                                                 fileType,
+                                                                 attributeName,
+                                                                 attributeMap.get(attributeName),
                                                                  methodName);
-                }
-                break;
-            }
+        }
+    }
 
+    private Map<String, String> getDataFileProperties(String name) {
+        String methodName = "getDataFileProperties";
 
+        Map<String,String> attributeMap = new HashMap<>();
+        String fileType = null;
+        int lastDotIndex = name.lastIndexOf(".");
+        if (name.length() > 2 && lastDotIndex != -1 && lastDotIndex < name.length() - 1) {
+            // if we can see a file type then add as an attribute
+            fileType = name.substring(lastDotIndex + 1);
+        }
+
+        if (fileType != null) {
+            attributeMap.put("fileType",fileType);
         }
 
 
-
+        return attributeMap;
     }
 
     private void issueSaveEntityReferenceCopy(EntityDetail entityToAdd) throws ConnectorCheckedException {
