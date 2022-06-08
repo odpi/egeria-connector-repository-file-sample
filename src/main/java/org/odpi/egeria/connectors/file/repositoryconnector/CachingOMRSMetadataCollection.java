@@ -3,41 +3,29 @@
 package org.odpi.egeria.connectors.file.repositoryconnector;
 
 import org.odpi.egeria.connectors.file.auditlog.FileOMRSErrorCode;
-import org.odpi.egeria.connectors.file.eventmapper.FileOMRSRepositoryEventMapper;
 
-import org.odpi.openmetadata.frameworks.connectors.Connector;
 import org.odpi.openmetadata.frameworks.connectors.ConnectorBroker;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectionCheckedException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectorCheckedException;
 import org.odpi.openmetadata.frameworks.connectors.properties.beans.Connection;
 import org.odpi.openmetadata.frameworks.connectors.properties.beans.ConnectorType;
-import org.odpi.openmetadata.repositoryservices.archivemanager.OMRSArchiveManager;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.HistorySequencingOrder;
-import org.odpi.openmetadata.adminservices.configuration.properties.OpenMetadataExchangeRule;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryConnector;
-import org.odpi.openmetadata.repositoryservices.localrepository.repositoryconnector.LocalOMRSConnectorProvider;
-import org.odpi.openmetadata.repositoryservices.localrepository.repositoryconnector.LocalOMRSRepositoryConnector;
-import org.odpi.openmetadata.repositoryservices.localrepository.repositorycontentmanager.OMRSRepositoryContentHelper;
-import org.odpi.openmetadata.repositoryservices.localrepository.repositorycontentmanager.OMRSRepositoryContentManager;
-import org.odpi.openmetadata.repositoryservices.localrepository.repositorycontentmanager.OMRSRepositoryContentValidator;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.search.SearchClassifications;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.search.SearchProperties;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSFixedTypeMetadataCollectionBase;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.MatchCriteria;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.SequencingOrder;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.*;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.typedefs.*;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryHelper;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryValidator;
-import org.odpi.openmetadata.repositoryservices.eventmanagement.OMRSRepositoryEventExchangeRule;
 import org.odpi.openmetadata.frameworks.auditlog.AuditLog;
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
 
 
 import java.util.*;
 
-public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionBase {
+public class CachingOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionBase {
 
     OMRSRepositoryConnector embeddedConnector = null;
     OMRSMetadataCollection embeddedMetadataCollection = null;
@@ -57,14 +45,14 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
      * @throws RepositoryErrorException RepositoryErrorException error occured in the repository
      */
 
-    public FileOMRSMetadataCollection(FileOMRSRepositoryConnector parentConnector,
-                                      String repositoryName,
-                                      OMRSRepositoryHelper repositoryHelper,
-                                      OMRSRepositoryValidator repositoryValidator,
-                                      String metadataCollectionId,
-                                      List<String> supportedAttributeTypeNames,
-                                      List<String> supportedTypeNames,
-                                      AuditLog auditLog) throws  RepositoryErrorException {
+    public CachingOMRSMetadataCollection(CachingOMRSRepositoryProxyConnector parentConnector,
+                                         String repositoryName,
+                                         OMRSRepositoryHelper repositoryHelper,
+                                         OMRSRepositoryValidator repositoryValidator,
+                                         String metadataCollectionId,
+                                         List<String> supportedAttributeTypeNames,
+                                         List<String> supportedTypeNames,
+                                         AuditLog auditLog) throws  RepositoryErrorException {
         super(parentConnector,
               repositoryName,
               repositoryHelper,
@@ -75,8 +63,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
 
         this.metadataCollectionId = metadataCollectionId;
         try {
-            this.embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper,
-                                                                                              repositoryValidator);
+            this.embeddedConnector = initializeEmbeddedRepositoryConnector(repositoryHelper, repositoryValidator);
             this.embeddedMetadataCollection = embeddedConnector.getMetadataCollection();
         } catch (ConnectionCheckedException e) {
             raiseRepositoryErrorException(FileOMRSErrorCode.COLLECTION_FAILED_INITIALISE, "FileOMRSMetadataCollection constructor", e, "null");
@@ -212,8 +199,7 @@ public class FileOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionB
 //                                                           sequencingOrder,
 //                                                           pageSize);
 //        return setOuterMetadataCollectionInformation(entityDetailList);
-        return
-                embeddedMetadataCollection.findEntities(userId,
+        return embeddedMetadataCollection.findEntities(userId,
                                                            entityTypeGUID,
                                                            entitySubtypeGUIDs,
                                                            matchProperties,
