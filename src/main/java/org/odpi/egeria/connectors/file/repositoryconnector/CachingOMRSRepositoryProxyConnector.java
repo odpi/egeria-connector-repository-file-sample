@@ -68,12 +68,14 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
         super.start();
         final String methodName = "start";
         auditLog.logMessage(methodName, FileOMRSAuditCode.REPOSITORY_SERVICE_STARTING.getMessageDefinition());
-        if (metadataCollection == null) {
-            // If the metadata collection has not yet been created, attempt to create it now
-            try {
-                initializeMetadataCollection();
-            } catch (RepositoryErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
+        synchronized (this) {
+            if (metadataCollection == null) {
+                // If the metadata collection has not yet been created, attempt to create it now
+                try {
+                    initializeMetadataCollection();
+                } catch (RepositoryErrorException e) {
+                    raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
+                }
             }
         }
 
@@ -96,22 +98,21 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
      */
     @Override
     public OMRSMetadataCollection getMetadataCollection() throws RepositoryErrorException {
-        if (metadataCollection == null) {
-            // If the metadata collection has not yet been created, attempt to create it now
-            initializeMetadataCollection();
+        synchronized (this) {
+            if (metadataCollection == null) {
+                // If the metadata collection has not yet been created, attempt to create it now
+                initializeMetadataCollection();
+            }
         }
-
         return super.getMetadataCollection();
     }
 
     private void initializeMetadataCollection() throws RepositoryErrorException {
-        synchronized (this) {
             metadataCollection = new CachingOMRSMetadataCollection(this,
                                                                    serverName,
                                                                    repositoryHelper,
                                                                    repositoryValidator,
                                                                    metadataCollectionId);
-        }
     }
 
 //    @Override
