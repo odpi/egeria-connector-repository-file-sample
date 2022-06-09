@@ -96,7 +96,6 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
      */
     @Override
     public OMRSMetadataCollection getMetadataCollection() throws RepositoryErrorException {
-        final String methodName = "getMetadataCollection";
         if (metadataCollection == null) {
             // If the metadata collection has not yet been created, attempt to create it now
             initializeMetadataCollection();
@@ -115,32 +114,11 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
         }
     }
 
-    /**
-     * Throws a RepositoryErrorException using the provided parameters.
-     * @param errorCode the error code for the exception
-     * @param methodName the name of the method throwing the exception
-     * @param cause the underlying cause of the exception (or null if none)
-     * @param params any parameters for formatting the error message
-     * @throws RepositoryErrorException always
-     */
-    private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RepositoryErrorException {
-        if (cause == null) {
-            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                                               this.getClass().getName(),
-                                               methodName);
-        } else {
-            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                                               this.getClass().getName(),
-                                               methodName,
-                                               cause);
-        }
-    }
-
 //    @Override
 //    public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
 //        // TODO
 //    }
-    
+
     /**
      * Throws a ConnectorCheckedException based on the provided parameters.
      *
