@@ -5,6 +5,9 @@ package org.odpi.egeria.connectors.file.eventmapper;
 import org.odpi.openmetadata.frameworks.connectors.properties.beans.ConnectorType;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryConnectorProviderBase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * In the Open Connector Framework (OCF), a ConnectorProvider is a factory for a specific type of connector.
  * The ApacheAtlasOMRSRepositoryEventMapperProvider is the connector provider for the ApacheAtlasOMRSRepositoryEventMapperProvider.
@@ -20,6 +23,10 @@ public class FileOMRSRepositoryEventMapperProvider extends OMRSRepositoryConnect
     static final String CONNECTOR_TYPE_GUID = "09dcef5f-94e6-44da-8d3c-1f299daa4221";
     static final String CONNECTOR_TYPE_NAME = "OMRS Sample File Event Mapper Connector";
     static final String CONNECTOR_TYPE_DESC = "OMRS Sample File Event Mapper Connector that polls for content.";
+    static final String QUALIFIED_NAME_PREFIX = "qualifiedNamePrefix";
+
+    static final String REFRESH_TIME_INTERVAL = "refreshTimeInterval";
+
 
     /**
      * Constructor used to initialize the ConnectorProviderBase with the Java class name of the specific
@@ -35,6 +42,12 @@ public class FileOMRSRepositoryEventMapperProvider extends OMRSRepositoryConnect
         connectorType.setDisplayName(CONNECTOR_TYPE_NAME);
         connectorType.setDescription(CONNECTOR_TYPE_DESC);
         connectorType.setConnectorProviderClassName(this.getClass().getName());
+
+        List<String> knownConfigProperties = new ArrayList<>();
+        knownConfigProperties.add(QUALIFIED_NAME_PREFIX);
+        knownConfigProperties.add(REFRESH_TIME_INTERVAL);
+        connectorType.setRecognizedConfigurationProperties(knownConfigProperties);
+
         super.setConnectorTypeProperties(connectorType);
     }
 

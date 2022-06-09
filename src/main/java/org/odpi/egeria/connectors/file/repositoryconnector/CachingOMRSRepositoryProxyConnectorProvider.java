@@ -18,8 +18,8 @@ import java.util.List;
  * name of the OMRS Connector implementation (by calling super.setConnectorClassName(className)).
  * Then the connector provider will work.
  */
-public class FileOMRSRepositoryConnectorProvider extends OMRSRepositoryConnectorProviderBase {
-
+public class CachingOMRSRepositoryProxyConnectorProvider extends OMRSRepositoryConnectorProviderBase {
+    static final String SUPPORTED_TYPES = "supportedTypeNames";
     static final String CONNECTOR_TYPE_GUID = "8e29c4ae-cae4-11ec-9d64-0242ac120002";
     static final String CONNECTOR_TYPE_NAME = "OMRS Sample File Repository Connector";
     static final String CONNECTOR_TYPE_DESC = "OMRS Sample File Repository Connector that issues calls to the file system.";
@@ -30,9 +30,9 @@ public class FileOMRSRepositoryConnectorProvider extends OMRSRepositoryConnector
      * Constructor used to initialize the ConnectorProviderBase with the Java class name of the specific
      * OMRS Connector implementation.
      */
-    public FileOMRSRepositoryConnectorProvider() {
+    public CachingOMRSRepositoryProxyConnectorProvider() {
 
-        Class<?> connectorClass = FileOMRSRepositoryConnector.class;
+        Class<?> connectorClass = CachingOMRSRepositoryProxyConnector.class;
         super.setConnectorClassName(connectorClass.getName());
 
         ConnectorType connectorType = new ConnectorType();
@@ -44,7 +44,7 @@ public class FileOMRSRepositoryConnectorProvider extends OMRSRepositoryConnector
         connectorType.setConnectorProviderClassName(this.getClass().getName());
 
         List<String> knownConfigProperties = new ArrayList<>();
-//        knownConfigProperties.add(PURGE_FOR_DELETE);
+        knownConfigProperties.add(SUPPORTED_TYPES);
         connectorType.setRecognizedConfigurationProperties(knownConfigProperties);
 
         super.connectorTypeBean = connectorType;
