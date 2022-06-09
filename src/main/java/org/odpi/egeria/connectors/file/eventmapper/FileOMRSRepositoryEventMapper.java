@@ -8,6 +8,7 @@ import org.odpi.egeria.connectors.file.auditlog.FileOMRSErrorCode;
 import org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSMetadataCollection;
 import org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSRepositoryProxyConnector;
 
+import org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSRepositoryProxyConnectorProvider;
 import org.odpi.openmetadata.frameworks.connectors.properties.EndpointProperties;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
 
@@ -40,6 +41,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * FileOMRSRepositoryEventMapper supports the event mapper function for Apache File
@@ -65,6 +67,9 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //    private String originatorServerName;
 //    private String originatorServerType;
     Map<String, String> typeNameToGuidMap =null;
+
+    private int refreshInterval = 5000;
+    private String qualifiedNamePrefix = "";
 
     protected String                  metadataCollectionId   = null;
     protected String                  metadataCollectionName = null;
@@ -159,6 +164,19 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                 raiseConnectorCheckedException(FileOMRSErrorCode.FAILED_TO_START_CONNECTOR, methodName, null);
             }
         }
+        Map<String, Object> configurationProperties = connectionProperties.getConfigurationProperties();
+
+        if (configurationProperties != null ) {
+            Integer configuredRefreshinterval = (Integer) configurationProperties.get(FileOMRSRepositoryEventMapperProvider.REFRESH_TIME_INTERVAL);
+            if (configuredRefreshinterval != null) {
+                refreshInterval = configuredRefreshinterval*1000;
+            }
+            String configuredQualifiedNamePrefix = (String) configurationProperties.get(FileOMRSRepositoryEventMapperProvider.QUALIFIED_NAME_PREFIX);
+            if (configuredQualifiedNamePrefix != null) {
+                qualifiedNamePrefix = configuredQualifiedNamePrefix;
+            }
+        }
+
 
         this.pollingThread = new PollingThread();
         pollingThread.start();
@@ -336,7 +354,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                 //delay for 1 second and then retry
                                 auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_LOOP_PRE_WAIT.getMessageDefinition());
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep(1000);  // TODO config ?
                                     retryCount++;
                                     auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_LOOP_POST_WAIT.getMessageDefinition(retryCount + ""));
                                 } catch (InterruptedException e) {
@@ -351,7 +369,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                             }
 
                         }
-                        if (retryCount == 10) {
+                        if (retryCount == 10) { // TODO config ?
 
                             //TODO error
                         } else {
@@ -366,7 +384,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         //delay for 5 second and then retry
                         auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_PRE_WAIT.getMessageDefinition());
                         try {
-                            Thread.sleep(5000);
+                            Thread.sleep(refreshInterval);
                             retryCount++;
                             auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_POST_WAIT.getMessageDefinition(retryCount + ""));
                         } catch (InterruptedException e) {
@@ -669,7 +687,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             initialProperties = repositoryHelper.addStringPropertyToInstance(methodName,
                                                                              initialProperties,
                                                                              "qualifiedName",
-                                                                             canonicalName,  // TODO prefix
+                                                                             qualifiedNamePrefix +canonicalName,
                                                                              methodName);
             if (attributeMap != null && !attributeMap.keySet().isEmpty()) {
                 addTypeSpecificProperties(initialProperties, attributeMap);

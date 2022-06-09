@@ -9,6 +9,7 @@ import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectionCheckedExcepti
 import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectorCheckedException;
 import org.odpi.openmetadata.frameworks.connectors.properties.beans.Connection;
 import org.odpi.openmetadata.frameworks.connectors.properties.beans.ConnectorType;
+import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSDynamicTypeMetadataCollectionBase;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryConnector;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.search.SearchClassifications;
@@ -25,7 +26,7 @@ import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
 
 import java.util.*;
 
-public class CachingOMRSMetadataCollection extends OMRSFixedTypeMetadataCollectionBase {
+public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollectionBase {
 
     OMRSRepositoryConnector embeddedConnector = null;
     OMRSMetadataCollection embeddedMetadataCollection = null;
@@ -38,9 +39,6 @@ public class CachingOMRSMetadataCollection extends OMRSFixedTypeMetadataCollecti
      *                             to build valid type definitions (TypeDefs), entities and relationships.
      * @param repositoryValidator  validator class for checking open metadata repository objects and parameters
      * @param metadataCollectionId unique identifier for the repository
-     * @param supportedAttributeTypeNames supported attribute type names
-     * @param supportedTypeNames   supported type names
-     * @param auditLog             audit log
      *
      * @throws RepositoryErrorException RepositoryErrorException error occured in the repository
      */
@@ -49,17 +47,12 @@ public class CachingOMRSMetadataCollection extends OMRSFixedTypeMetadataCollecti
                                          String repositoryName,
                                          OMRSRepositoryHelper repositoryHelper,
                                          OMRSRepositoryValidator repositoryValidator,
-                                         String metadataCollectionId,
-                                         List<String> supportedAttributeTypeNames,
-                                         List<String> supportedTypeNames,
-                                         AuditLog auditLog) throws  RepositoryErrorException {
+                                         String metadataCollectionId) throws  RepositoryErrorException {
         super(parentConnector,
               repositoryName,
               repositoryHelper,
               repositoryValidator,
-              metadataCollectionId,
-              supportedAttributeTypeNames,
-              supportedTypeNames);
+              metadataCollectionId);
 
         this.metadataCollectionId = metadataCollectionId;
         try {
@@ -71,6 +64,7 @@ public class CachingOMRSMetadataCollection extends OMRSFixedTypeMetadataCollecti
             raiseRepositoryErrorException(FileOMRSErrorCode.COLLECTION_FAILED_INITIALISE, "FileOMRSMetadataCollection constructor", e, "null");
         }
     }
+
     OMRSMetadataCollection getEmbeddedMetadataCollection() {
         return embeddedMetadataCollection;
     }

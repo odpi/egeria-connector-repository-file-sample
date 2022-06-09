@@ -26,6 +26,7 @@ import java.io.File;
 import java.time.Instant;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This sample repository connector is implmented to show a polling pattern against a file system.
@@ -50,56 +51,6 @@ import java.util.*;
 public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
 //        implements VirtualConnectorExtension
 {
-
-   // private static final Logger log = LoggerFactory.getLogger(org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSRepositoryProxyConnector.class);
-    private static final String DATA_FILE = "DataFile";
-    private static final String CONNECTION = "Connection";
-    private static final String CONNECTOR_TYPE = "ConnectorType";
-    private static final String ENDPOINT = "Endpoint";
-    private static final String CONNECTION_ENDPOINT = "ConnectionEndpoint";
-    private static final String CONNECTION_CONNECTOR_TYPE = "ConnectionConnectorType";
-    private static final String CONNECTION_TO_ASSET = "ConnectionToAsset";
-    private final List<String> supportedAttributeTypeNames = Arrays.asList(new String[]{
-            "object",
-            "boolean",
-            "byte",
-            "char",
-            "short",
-            "int",
-            "long",
-            "float",
-            "biginteger",
-            "bigdecimal",
-            "string",
-            "date",
-            "map<string,boolean>",
-            "map<string,int>",
-            "map<string,long>",
-            "map<string,object>",
-            "array<string>",
-            "array<int>"
-    });
-    //final List<String> supportedTypeNames = null;
-
-    final List<String> supportedTypeNames = Arrays.asList(new String[]{
-            // entity types
-            "DataStore", // super type of Datafile
-            "Asset", // super type of Datastore
-            "Referenceable", // super type of the others
-            "OpenMetadataRoot", // super type of referenceable
-            DATA_FILE,
-            CONNECTION,
-            CONNECTOR_TYPE,
-            ENDPOINT,
-            // relationship types
-            CONNECTION_ENDPOINT,
-            CONNECTION_CONNECTOR_TYPE,
-            CONNECTION_TO_ASSET
-            // classification types
-            // none at this time
-    });
-
-
 
     /**
      * Default constructor used by the OCF Connector Provider.
@@ -155,79 +106,41 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
     }
 
     private void initializeMetadataCollection() throws RepositoryErrorException {
-        metadataCollection = new CachingOMRSMetadataCollection(this,
-                                                               serverName,
-                                                               repositoryHelper,
-                                                               repositoryValidator,
-                                                               metadataCollectionId,
-                                                               supportedAttributeTypeNames,
-                                                               supportedTypeNames,
-                                                               auditLog);
+        synchronized (this) {
+            metadataCollection = new CachingOMRSMetadataCollection(this,
+                                                                   serverName,
+                                                                   repositoryHelper,
+                                                                   repositoryValidator,
+                                                                   metadataCollectionId);
+        }
     }
-//
-//
-//
-//
-//    }
 
-
-
-
-
-
-//    /**
-//     * Throws a ConnectorCheckedException using the provided parameters.
-//     * @param errorCode the error code for the exception
-//     * @param methodName the name of the method throwing the exception
-//     * @param cause the underlying cause of the exception (if any, null otherwise)
-//     * @param params any parameters for formatting the error message
-//     * @throws ConnectorCheckedException always
-//     */
-//    private void raiseConnectorCheckedException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws ConnectorCheckedException {
-//        if (cause == null) {
-//            throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
-//                                                this.getClass().getName(),
-//                                                methodName);
-//        } else {
-//            throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
-//                                                this.getClass().getName(),
-//                                                methodName,
-//                                                cause);
-//        }
-//    }
-
-//    /**
-//     * Throws a RepositoryErrorException using the provided parameters.
-//     * @param errorCode the error code for the exception
-//     * @param methodName the name of the method throwing the exception
-//     * @param cause the underlying cause of the exception (or null if none)
-//     * @param params any parameters for formatting the error message
-//     * @throws RepositoryErrorException always
-//     */
-//    private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RepositoryErrorException {
-//        if (cause == null) {
-//            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-//                                               this.getClass().getName(),
-//                                               methodName);
-//        } else {
-//            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-//                                               this.getClass().getName(),
-//                                               methodName,
-//                                               cause);
-//        }
-//    }
+    /**
+     * Throws a RepositoryErrorException using the provided parameters.
+     * @param errorCode the error code for the exception
+     * @param methodName the name of the method throwing the exception
+     * @param cause the underlying cause of the exception (or null if none)
+     * @param params any parameters for formatting the error message
+     * @throws RepositoryErrorException always
+     */
+    private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String ...params) throws RepositoryErrorException {
+        if (cause == null) {
+            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
+                                               this.getClass().getName(),
+                                               methodName);
+        } else {
+            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
+                                               this.getClass().getName(),
+                                               methodName,
+                                               cause);
+        }
+    }
 
 //    @Override
 //    public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
 //        // TODO
 //    }
-
-//    public OMRSMetadataCollection initialiseMetadataCollection(List<String> supportedTypeNames) throws RepositoryErrorException {
-//
-//
-//            );
-//            return metadataCollection;
-//    }
+    
     /**
      * Throws a ConnectorCheckedException based on the provided parameters.
      *

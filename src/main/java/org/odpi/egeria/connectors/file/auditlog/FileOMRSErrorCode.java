@@ -134,6 +134,11 @@ public enum FileOMRSErrorCode implements ExceptionMessageSet {
                                    "Connector is unable to be used",
                                    "Logic error. Check the logs and debug."),
 
+    INVALID_TYPE_SUPPLIED_IN_CONFIGURATION(400, "OMRS-FILE-REPOSITORY-400-090 ",
+                           "Invalid type {0} supplied in the configuration",
+                           "Connector is unable to be used",
+                           "check the supportedTypeNames configuration parameter to only reference valid open types. Check the logs and debug."),
+
     REGEX_NOT_IMPLEMENTED(501, "OMRS-FILE-REPOSITORY-501-001 ",
             "Repository {0} is not able to support the regular expression \"{1}\"",
             "This repository has a fixed subset of regular expressions it can support.",
