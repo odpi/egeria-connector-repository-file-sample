@@ -49,8 +49,9 @@ import java.util.stream.Collectors;
  *
  */
 public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
-//        implements VirtualConnectorExtension
+        implements VirtualConnectorExtension
 {
+    private OMRSRepositoryConnector embeddedConnector = null;
 
     /**
      * Default constructor used by the OCF Connector Provider.
@@ -68,16 +69,16 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
         super.start();
         final String methodName = "start";
         auditLog.logMessage(methodName, FileOMRSAuditCode.REPOSITORY_SERVICE_STARTING.getMessageDefinition());
-        synchronized (this) {
-            if (metadataCollection == null) {
-                // If the metadata collection has not yet been created, attempt to create it now
-                try {
-                    initializeMetadataCollection();
-                } catch (RepositoryErrorException e) {
-                    raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
-                }
-            }
-        }
+//        synchronized (this) {
+//            if (metadataCollection == null) {
+//                // If the metadata collection has not yet been created, attempt to create it now
+//                try {
+//                    initializeMetadataCollection();
+//                } catch (RepositoryErrorException e) {
+//                    raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
+//                }
+//            }
+//        }
 
 
         auditLog.logMessage(methodName, FileOMRSAuditCode.REPOSITORY_SERVICE_STARTED.getMessageDefinition(getServerName()));
@@ -98,27 +99,33 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
      */
     @Override
     public OMRSMetadataCollection getMetadataCollection() throws RepositoryErrorException {
-        synchronized (this) {
-            if (metadataCollection == null) {
-                // If the metadata collection has not yet been created, attempt to create it now
-                initializeMetadataCollection();
-            }
-        }
         return super.getMetadataCollection();
     }
 
-    private void initializeMetadataCollection() throws RepositoryErrorException {
-            metadataCollection = new CachingOMRSMetadataCollection(this,
-                                                                   serverName,
-                                                                   repositoryHelper,
-                                                                   repositoryValidator,
-                                                                   metadataCollectionId);
-    }
-
-//    @Override
-//    public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
-//        // TODO
+//    private void initializeMetadataCollection() throws RepositoryErrorException {
+//            metadataCollection = new CachingOMRSMetadataCollection(this,
+//                                                                   serverName,
+//                                                                   repositoryHelper,
+//                                                                   repositoryValidator,
+//                                                                   metadataCollectionId,
+//                                                                   embeddedConnector);
 //    }
+
+    @Override
+    public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
+       if (embeddedConnectors.isEmpty()) {
+           // TODO error
+           System.err.println("no embedded connectors supplied  ");
+       } else if (embeddedConnectors.size() > 1) {
+           // TODO error
+           System.err.println("More than one embedded connectors supplied  ");
+       } else {
+           Connector connector = embeddedConnectors.get(0);
+           if (connector instanceof  OMRSRepositoryConnector) {
+                embeddedConnector = (OMRSRepositoryConnector) connector;
+           }
+       }
+    }
 
     /**
      * Throws a ConnectorCheckedException based on the provided parameters.
