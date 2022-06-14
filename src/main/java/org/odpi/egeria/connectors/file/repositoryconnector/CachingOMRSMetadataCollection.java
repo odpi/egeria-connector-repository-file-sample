@@ -58,43 +58,37 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
               metadataCollectionId);
 
         this.metadataCollectionId = metadataCollectionId;
-        try {
-            initializeEmbeddedRepositoryConnector(repositoryHelper, repositoryValidator, embeddedConnector);
 
-        } catch (ConnectionCheckedException e) {
-            raiseRepositoryErrorException(FileOMRSErrorCode.COLLECTION_FAILED_INITIALISE, "FileOMRSMetadataCollection constructor", e, "null");
-        } catch (ConnectorCheckedException e) {
-            raiseRepositoryErrorException(FileOMRSErrorCode.COLLECTION_FAILED_INITIALISE, "FileOMRSMetadataCollection constructor", e, "null");
-        }
+        embeddedConnector.setMetadataCollectionName(metadataCollectionName+"-embedded");
+        embeddedConnector.setRepositoryHelper(repositoryHelper);
+        embeddedConnector.setRepositoryValidator(repositoryValidator);
+        // this needs to be done last as it creates the embedded metadata collection if there is not one
+        embeddedConnector.setMetadataCollectionId(metadataCollectionId+"-embedded");
+        this.embeddedConnector = embeddedConnector;
+        this.embeddedMetadataCollection = this.embeddedConnector.getMetadataCollection();
     }
 
-    private void initializeEmbeddedRepositoryConnector(OMRSRepositoryHelper  repositoryHelper,
-                                                                          OMRSRepositoryValidator repositoryValidator,
-                                                                          OMRSRepositoryConnector embeddedConnector)
-    throws ConnectionCheckedException, ConnectorCheckedException, RepositoryErrorException {
-
-//        Connection connection = new Connection();
-//        ConnectorType connectorType = new ConnectorType();
-//        connection.setConnectorType(connectorType);
-//        connectorType.setConnectorProviderClassName("org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider");   // TODO get from config.
+//    private OMRSRepositoryConnector initializeEmbeddedRepositoryConnector(OMRSRepositoryHelper  repositoryHelper,
+//                                                                          OMRSRepositoryValidator repositoryValidator,
+//                                                                          Connection connection)
+//                                                                            throws ConnectionCheckedException ,ConnectorCheckedException {
+//
+////        Connection connection = new Connection();
+////        ConnectorType connectorType = new ConnectorType();
+////        connection.setConnectorType(connectorType);
+////        connectorType.setConnectorProviderClassName("org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider");   // TODO get from config.
 //
 //        ConnectorBroker connectorBroker = new ConnectorBroker();
 //        OMRSRepositoryConnector embeddedConnector = (OMRSRepositoryConnector) connectorBroker.getConnector(connection);
-        embeddedConnector.setRepositoryHelper(repositoryHelper);
-        embeddedConnector.setRepositoryValidator(repositoryValidator);
-        // this collection id is never stored in an entity as we ony populate the repo with reference copies
-
-        if (embeddedConnector.getMetadataCollectionId() == null) {
-            embeddedConnector.setMetadataCollectionId(metadataCollectionId + "-embedded");
-        }
-        if (embeddedConnector.getMetadataCollectionName() == null) {
-            embeddedConnector.setMetadataCollectionName(metadataCollectionName + "-embedded");
-        }
-        embeddedConnector.start();
-
-        this.embeddedConnector = embeddedConnector;
-        this.embeddedMetadataCollection = embeddedConnector.getMetadataCollection();
-    }
+//        embeddedConnector.setRepositoryHelper(repositoryHelper);
+//        embeddedConnector.setRepositoryValidator(repositoryValidator);
+//        // this collection id is never stored in an entity as we ony populate the repo with reference copies
+//        embeddedConnector.setMetadataCollectionId(metadataCollectionId+"-embedded");
+//        embeddedConnector.setMetadataCollectionName(metadataCollectionName+"-embedded");
+//        embeddedConnector.start();
+//
+//        return embeddedConnector;
+//    }
     /**
      * Throw a RepositoryErrorException using the provided parameters.
      * @param errorCode the error code for the exception
