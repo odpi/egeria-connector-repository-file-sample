@@ -29,7 +29,6 @@ import java.util.*;
 
 public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollectionBase {
 
-    OMRSRepositoryConnector embeddedConnector = null;
     OMRSMetadataCollection embeddedMetadataCollection = null;
 
     /**
@@ -40,8 +39,9 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
      *                             to build valid type definitions (TypeDefs), entities and relationships.
      * @param repositoryValidator  validator class for checking open metadata repository objects and parameters
      * @param metadataCollectionId unique identifier for the repository
+     * @param embeddedConnector    embedded connector
      *
-     * @throws RepositoryErrorException RepositoryErrorException error occured in the repository
+     * @throws RepositoryErrorException  repository error exception
      */
 
     public CachingOMRSMetadataCollection(CachingOMRSRepositoryProxyConnector parentConnector,
@@ -50,7 +50,7 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
                                          OMRSRepositoryValidator repositoryValidator,
                                          String metadataCollectionId,
                                          OMRSRepositoryConnector embeddedConnector
-                                        ) throws  RepositoryErrorException {
+                                        ) throws RepositoryErrorException {
         super(parentConnector,
               repositoryName,
               repositoryHelper,
@@ -64,31 +64,9 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
         embeddedConnector.setRepositoryValidator(repositoryValidator);
         // this needs to be done last as it creates the embedded metadata collection if there is not one
         embeddedConnector.setMetadataCollectionId(metadataCollectionId+"-embedded");
-        this.embeddedConnector = embeddedConnector;
-        this.embeddedMetadataCollection = this.embeddedConnector.getMetadataCollection();
+        this.embeddedMetadataCollection = embeddedConnector.getMetadataCollection();
     }
 
-//    private OMRSRepositoryConnector initializeEmbeddedRepositoryConnector(OMRSRepositoryHelper  repositoryHelper,
-//                                                                          OMRSRepositoryValidator repositoryValidator,
-//                                                                          Connection connection)
-//                                                                            throws ConnectionCheckedException ,ConnectorCheckedException {
-//
-////        Connection connection = new Connection();
-////        ConnectorType connectorType = new ConnectorType();
-////        connection.setConnectorType(connectorType);
-////        connectorType.setConnectorProviderClassName("org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider");   // TODO get from config.
-//
-//        ConnectorBroker connectorBroker = new ConnectorBroker();
-//        OMRSRepositoryConnector embeddedConnector = (OMRSRepositoryConnector) connectorBroker.getConnector(connection);
-//        embeddedConnector.setRepositoryHelper(repositoryHelper);
-//        embeddedConnector.setRepositoryValidator(repositoryValidator);
-//        // this collection id is never stored in an entity as we ony populate the repo with reference copies
-//        embeddedConnector.setMetadataCollectionId(metadataCollectionId+"-embedded");
-//        embeddedConnector.setMetadataCollectionName(metadataCollectionName+"-embedded");
-//        embeddedConnector.start();
-//
-//        return embeddedConnector;
-//    }
     /**
      * Throw a RepositoryErrorException using the provided parameters.
      * @param errorCode the error code for the exception
@@ -109,70 +87,29 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
                                                cause);
         }
     }
-//    private EntityDetail setOuterMetadataCollectionInformation(EntityDetail entity) {
-//        if (entity == null) {
-//            return null;
-//        }
-//        entity.setMetadataCollectionId(metadataCollectionId);
-//        entity.setMetadataCollectionName(metadataCollectionName);
-//        return entity;
-//    }
-//    private EntitySummary setOuterMetadataCollectionInformation(EntitySummary entity) {
-//        if (entity == null) {
-//            return null;
-//        }
-//        entity.setMetadataCollectionId(metadataCollectionId);
-//        entity.setMetadataCollectionName(metadataCollectionName);
-//        return entity;
-//    }
-//    private List<EntityDetail> setOuterMetadataCollectionInformation(List<EntityDetail> entities) {
-//        if (entities == null) {
-//            return null;
-//        }
-//        List<EntityDetail> list = new ArrayList<>();
-//        for (EntityDetail entityDetail: entities) {
-//            EntityDetail newEntityDetail = setOuterMetadataCollectionInformation( entityDetail);
-//            list.add(newEntityDetail);
-//        }
-//        return list;
-//    }
-
 
     // ** Delegate all the collection methods we care about to the embedded connector collection.
     // Currently only read orientated calls in groups 3 and 4 are implmented. See OMRSMetadataCollection class for the meaning of the groups.
 
     @Override
     public EntityDetail isEntityKnown(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, UserNotAuthorizedException {
-//        EntityDetail entityDetail = embeddedMetadataCollection.isEntityKnown(userId, guid);
-//        return setOuterMetadataCollectionInformation(entityDetail);
         return embeddedMetadataCollection.isEntityKnown(userId, guid);
     }
 
     @Override
     public EntitySummary getEntitySummary(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, UserNotAuthorizedException {
-//        EntitySummary entitySummary = embeddedMetadataCollection.getEntitySummary(userId, guid);
-//        return setOuterMetadataCollectionInformation(entitySummary);
         return embeddedMetadataCollection.getEntitySummary(userId, guid);
     }
 
     @Override
     public EntityDetail getEntityDetail(String userId, String guid) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, UserNotAuthorizedException {
-//        EntityDetail entityDetail =  embeddedMetadataCollection.getEntityDetail(userId, guid);
-//        return setOuterMetadataCollectionInformation(entityDetail);
         return embeddedMetadataCollection.getEntityDetail(userId, guid);
     }
 
     @Override
     public EntityDetail getEntityDetail(String userId, String guid, Date asOfTime) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, FunctionNotSupportedException, UserNotAuthorizedException {
-//        EntityDetail entityDetail = embeddedMetadataCollection.getEntityDetail(userId, guid, asOfTime);
-//        return setOuterMetadataCollectionInformation(entityDetail);
         return embeddedMetadataCollection.getEntityDetail(userId, guid, asOfTime);
     }
-
-//    @Override
-//    public List<EntityDetail> getEntityDetailHistory(String userId, String guid, Date fromTime, Date toTime, int startFromElement, int pageSize, HistorySequencingOrder sequencingOrder) throws InvalidParameterException, RepositoryErrorException, EntityNotKnownException, EntityProxyOnlyException, FunctionNotSupportedException, UserNotAuthorizedException {
-//        return embeddedMetadataCollection.getEntityDetailHistory(userId, guid, fromTime, toTime, startFromElement, pageSize, sequencingOrder);
-//    }
 
     @Override
     public List<Relationship> getRelationshipsForEntity(String userId, String entityGUID, String relationshipTypeGUID, int fromRelationshipElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, EntityNotKnownException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
@@ -181,19 +118,6 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
 
     @Override
     public List<EntityDetail> findEntities(String userId, String entityTypeGUID, List<String> entitySubtypeGUIDs, SearchProperties matchProperties, int fromEntityElement, List<InstanceStatus> limitResultsByStatus, SearchClassifications matchClassifications, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, RepositoryErrorException, TypeErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
-
-//        List<EntityDetail> entityDetailList = embeddedMetadataCollection.findEntities(userId,
-//                                                           entityTypeGUID,
-//                                                           entitySubtypeGUIDs,
-//                                                           matchProperties,
-//                                                           fromEntityElement,
-//                                                           limitResultsByStatus,
-//                                                           matchClassifications,
-//                                                           asOfTime,
-//                                                           sequencingProperty,
-//                                                           sequencingOrder,
-//                                                           pageSize);
-//        return setOuterMetadataCollectionInformation(entityDetailList);
         return embeddedMetadataCollection.findEntities(userId,
                                                            entityTypeGUID,
                                                            entitySubtypeGUIDs,
@@ -236,11 +160,6 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
     public Relationship getRelationship(String userId, String guid, Date asOfTime) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
         return embeddedMetadataCollection.getRelationship(userId, guid, asOfTime);
     }
-
-//    @Override
-//    public List<Relationship> getRelationshipHistory(String userId, String guid, Date fromTime, Date toTime, int startFromElement, int pageSize, HistorySequencingOrder sequencingOrder) throws InvalidParameterException, RepositoryErrorException, RelationshipNotKnownException, FunctionNotSupportedException, UserNotAuthorizedException {
-//        return embeddedMetadataCollection.getRelationshipHistory( userId,  guid,  fromTime,  toTime, startFromElement, pageSize, sequencingOrder);
-//    }
 
     @Override
     public List<Relationship> findRelationships(String userId, String relationshipTypeGUID, List<String> relationshipSubtypeGUIDs, SearchProperties matchProperties, int fromRelationshipElement, List<InstanceStatus> limitResultsByStatus, Date asOfTime, String sequencingProperty, SequencingOrder sequencingOrder, int pageSize) throws InvalidParameterException, TypeErrorException, RepositoryErrorException, PropertyErrorException, PagingErrorException, FunctionNotSupportedException, UserNotAuthorizedException {
