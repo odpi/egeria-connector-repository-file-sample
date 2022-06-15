@@ -7,8 +7,14 @@ import org.odpi.egeria.connectors.file.auditlog.FileOMRSAuditCode;
 import org.odpi.egeria.connectors.file.auditlog.FileOMRSErrorCode;
 import org.odpi.openmetadata.frameworks.connectors.Connector;
 import org.odpi.openmetadata.frameworks.connectors.VirtualConnectorExtension;
+import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectionCheckedException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectorCheckedException;
+import org.odpi.openmetadata.frameworks.connectors.properties.ConnectionProperties;
+import org.odpi.openmetadata.frameworks.connectors.properties.EmbeddedConnectionProperties;
 import org.odpi.openmetadata.frameworks.connectors.properties.EndpointProperties;
+import org.odpi.openmetadata.frameworks.connectors.properties.VirtualConnectionProperties;
+import org.odpi.openmetadata.frameworks.connectors.properties.beans.EmbeddedConnection;
+import org.odpi.openmetadata.frameworks.connectors.properties.beans.VirtualConnection;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryConnector;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.InstanceProperties;
@@ -29,7 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * This sample repository connector is implmented to show a polling pattern against a file system.
+ * This sample repository connector is implemented to show a polling pattern against a file system.
  * The polling call is initiated from FileOMRSRepositoryEventMapper using a refreshRepository call.
  *
  * Being a repository connector - it exposes the OMRS API.
@@ -49,8 +55,8 @@ import java.util.stream.Collectors;
  *
  */
 public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
-//        implements VirtualConnectorExtension
-{
+        implements VirtualConnectorExtension {
+    private OMRSRepositoryConnector embeddedConnector = null;
 
     /**
      * Default constructor used by the OCF Connector Provider.
@@ -76,6 +82,11 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
                 } catch (RepositoryErrorException e) {
                     raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
                 }
+            }
+            try {
+                this.embeddedConnector.start();
+            } catch (ConnectorCheckedException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -108,17 +119,43 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
     }
 
     private void initializeMetadataCollection() throws RepositoryErrorException {
+
             metadataCollection = new CachingOMRSMetadataCollection(this,
                                                                    serverName,
                                                                    repositoryHelper,
                                                                    repositoryValidator,
-                                                                   metadataCollectionId);
+                                                                   metadataCollectionId,
+                                                                   embeddedConnector);
+
+
+
     }
 
-//    @Override
-//    public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
-//        // TODO
-//    }
+    @Override
+    public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
+       if (embeddedConnectors == null || embeddedConnectors.isEmpty()) {
+           // TODO error
+           System.err.println("no embedded connectors supplied  ");
+       } else if (embeddedConnectors.size() > 1) {
+           // TODO error
+           System.err.println("More than one embedded connectors supplied  ");
+       } else {
+           Connector connector = embeddedConnectors.get(0);
+           if (connector instanceof  OMRSRepositoryConnector) {
+               this.embeddedConnector = (OMRSRepositoryConnector) connector;
+
+//               try {
+//                   ((CachingOMRSMetadataCollection)metadataCollection).initializeEmbeddedRepositoryConnector(embeddedConnector);
+//               } catch (ConnectionCheckedException e) {
+//                   throw new RuntimeException(e);
+//               } catch (ConnectorCheckedException e) {
+//                   throw new RuntimeException(e);
+//               } catch (RepositoryErrorException e) {
+//                   throw new RuntimeException(e);
+//               }
+           }
+       }
+    }
 
     /**
      * Throws a ConnectorCheckedException based on the provided parameters.

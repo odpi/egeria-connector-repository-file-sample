@@ -399,7 +399,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                             auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION_WITH_CAUSE.getMessageDefinition(e.getMessage(), e.getCause().getMessage()));
                         }
                     } finally {
-                        // stop the thead if we came out of the loop.
+                        // stop the thread if we came out of the loop.
                         this.stop();
                     }
                 }
@@ -718,9 +718,9 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
             entityToAdd.setGUID(guid);
             entityToAdd.setStatus(InstanceStatus.ACTIVE);
-            Instant instant = Instant.now();
-            long timeStampMillis = instant.toEpochMilli();
-            entityToAdd.setVersion(timeStampMillis);
+            // for this sample we only support add and delete so there is only one version
+            // if the name changes then this is an add and a delete
+            entityToAdd.setVersion(1);
 
             return entityToAdd;
 
