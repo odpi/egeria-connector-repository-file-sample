@@ -24,8 +24,6 @@ public class CachingOMRSRepositoryProxyConnectorProvider extends OMRSRepositoryC
     static final String CONNECTOR_TYPE_NAME = "OMRS Sample File Repository Connector";
     static final String CONNECTOR_TYPE_DESC = "OMRS Sample File Repository Connector that issues calls to the file system.";
 
-//    public static final String PURGE_FOR_DELETE = "purgeForDelete";
-
     /**
      * Constructor used to initialize the ConnectorProviderBase with the Java class name of the specific
      * OMRS Connector implementation.
@@ -42,10 +40,6 @@ public class CachingOMRSRepositoryProxyConnectorProvider extends OMRSRepositoryC
         connectorType.setDisplayName(CONNECTOR_TYPE_NAME);
         connectorType.setDescription(CONNECTOR_TYPE_DESC);
         connectorType.setConnectorProviderClassName(this.getClass().getName());
-
-//        List<String> knownConfigProperties = new ArrayList<>();
-//        knownConfigProperties.add(SUPPORTED_TYPES);
-//        connectorType.setRecognizedConfigurationProperties(knownConfigProperties);
 
         super.connectorTypeBean = connectorType;
 

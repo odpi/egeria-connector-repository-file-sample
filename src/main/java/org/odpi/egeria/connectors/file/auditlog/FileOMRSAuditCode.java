@@ -109,7 +109,7 @@ public enum FileOMRSAuditCode implements AuditLogMessageSet {
     EVENT_MAPPER_POLL_LOOP_POST_WAIT("OMRS-FILE-REPOSITORY-0018",
                                                 OMRSAuditLogRecordSeverity.INFO,
                                                 "The Sample file repository proxy event mapper polling loop has woken.",
-                                                "The Sample file repository proxy event mapper loop has woken from its 1 second sleep.",
+                                                "The Sample file repository proxy event mapper loop has woken from its sleep between polls.",
                                                 "No action is required.  This is part of the normal operation of the service."),
 
     EVENT_MAPPER_POLL_LOOP_INTERRUPTED_EXCEPTION("OMRS-FILE-REPOSITORY-0019",
