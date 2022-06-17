@@ -139,6 +139,33 @@ public enum FileOMRSErrorCode implements ExceptionMessageSet {
                            "Connector is unable to be used",
                            "check the supportedTypeNames configuration parameter to only reference valid open types. Check the logs and debug."),
 
+    EVENT_MAPPER_IMPROPERLY_INITIALIZED(400, "OMRS-FILE-REPOSITORY-400-091 ",
+                                        "The event mapper has been improperly initialized for repository {1}",
+                                        "The system will be unable to process any events",
+                                        "Check the system logs and diagnose or report the problem."),
+
+    EMBEDDED_CONNECTOR_NOT_SUPPLIED(400, "OMRS-FILE-REPOSITORY-400-092 ",
+                                    "The repository connector expected to have an embedded OMRS connector, but none was configured",
+                                    "The system will shutdown the server",
+                                    "Amend the configuration to supply an embedded OMRS connector."),
+
+    EMBEDDED_CONNECTOR_WRONG_TYPE(400, "OMRS-FILE-REPOSITORY-400-093 ",
+                                    "The embedded connector supp;ied as not an OMRS connector,",
+                                    "The system will shutdown the server",
+                                    "Amend the configuration to supply an embedded OMRS connector rather than one that is not an OMRS Connector."),
+    MULTIPLE_EMBEDDED_CONNECTORS_SUPPLIED(400, "OMRS-FILE-REPOSITORY-400-094 ",
+                                    "The repository connector expected to have 1 embedded OMRS connector, but multiple were configured",
+                                    "The system will shutdown the server",
+                                    "Amend the configuration to supply only 1 embedded OMRS connector."),
+
+    ENCODING_EXCEPTION(400, "OMRS-FILE-REPOSITORY-400-095 ",
+                                          "The event mapper failed to encode '{0}' with value '{1}' to create a guid",
+                                          "The system will shutdown the server",
+                                          "Debug the cause of the encoding error."),
+    EVENT_MAPPER_CANNOT_GET_TYPES(400, "OMRS-FILE-REPOSITORY-400-096 ",
+                                  "The event mapper failed to obtain the types, so cannot proceed ",
+                                  "The system will shutdown the server",
+                                  "ensure you are using a repository that supports the required types."),
     REGEX_NOT_IMPLEMENTED(501, "OMRS-FILE-REPOSITORY-501-001 ",
             "Repository {0} is not able to support the regular expression \"{1}\"",
             "This repository has a fixed subset of regular expressions it can support.",
@@ -151,10 +178,9 @@ public enum FileOMRSErrorCode implements ExceptionMessageSet {
             "No action required, this is a limitation of the technology. To search such history, the metadata of interest" +
                     " must be synchronized to a cohort repository that can support history."),
 
-    EVENT_MAPPER_IMPROPERLY_INITIALIZED(400, "OMRS-FILE-REPOSITORY-400-002 ",
-            "The event mapper has been improperly initialized for repository \"{1}\"",
-            "The system will be unable to process any events",
-            "Check the system logs and diagnose or report the problem."),
+
+
+
 //    TYPEDEF_NOT_SUPPORTED(404, "OMRS-FILE-REPOSITORY-404-001 ",
 //            "On Server {0} for request {1}, the typedef \"{3}\" is not supported by repository \"{1}\"",
 //            "The system is currently unable to support the requested the typedef.",

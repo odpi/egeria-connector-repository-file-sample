@@ -1,0 +1,305 @@
+{
+	"info": {
+		"_postman_id": "8cf5947f-c090-4e42-aec1-651b6c50b4c0",
+		"name": "File Caching Repository Proxy sample - with variables",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2330095"
+	},
+	"item": [
+		{
+			"name": "1. Configure event bus",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"producer\":{\"bootstrap.servers\":\"localhost:9092\"},\"consumer\":{\"bootstrap.servers\":\"localhost:9092\"}}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/event-bus?connectorProvider=org.odpi.openmetadata.adapters.eventbus.topic.kafka.KafkaOpenMetadataTopicProvider&topicURLRoot=OMRSTopic",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"event-bus"
+					],
+					"query": [
+						{
+							"key": "connectorProvider",
+							"value": "org.odpi.openmetadata.adapters.eventbus.topic.kafka.KafkaOpenMetadataTopicProvider"
+						},
+						{
+							"key": "topicURLRoot",
+							"value": "OMRSTopic"
+						}
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Configure cohort",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/cohorts/{{cohort}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"cohorts",
+						"{{cohort}}"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "3. post file repository repository proxy mode",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/server-type?typeName=Repository Proxy",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"server-type"
+					],
+					"query": [
+						{
+							"key": "typeName",
+							"value": "Repository Proxy"
+						}
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "4a. post file repository connector in mem",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"class\": \"VirtualConnection\",\n    \"headerVersion\": 0,               \n    \"displayName\":\"OMRS Sample File Repository Connector\",\n    \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"8e29c4ae-cae4-11ec-9d64-0242ac120002\",\n               \"qualifiedName\":\"OMRS Sample File Repository Connector\",\n               \"displayName\":\"OMRS Sample File Repository Connector\",\n               \"description\":\"OMRS Sample File Repository Connector that issues calls to the file system.\",\n               \"connectorProviderClassName\":\"org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSRepositoryProxyConnectorProvider\"\n   },\n   \"embeddedConnections\":[\n      {\n         \"class\":\"EmbeddedConnection\",\n         \"headerVersion\":0,\n         \"position\":0,\n         \"displayName\":\"embedded in memory\",\n         \"embeddedConnection\":{\n            \"class\":\"Connection\",\n            \"headerVersion\":0,\n            \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"65cc9091-757f-4bcd-b937-426160be8bc2\",\n               \"qualifiedName\":\"Egeria:OMRSRepositoryConnector:InMemory\",\n               \"displayName\":\"In Memory OMRS Repository Connector\",\n               \"description\":\"Native open metadata repository connector that maps open metadata calls to a set of in memory hash maps - demo use only.\",\n               \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider\"\n            }\n         }\n      }\n   ]\n}\n"
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/local-repository/mode/repository-proxy/connection",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"local-repository",
+						"mode",
+						"repository-proxy",
+						"connection"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "4b. post file repository connector XTDB",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"class\": \"VirtualConnection\",\n    \"headerVersion\": 0,               \n    \"displayName\":\"OMRS Sample File Repository Connector\",\n    \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"8e29c4ae-cae4-11ec-9d64-0242ac120002\",\n               \"qualifiedName\":\"OMRS Sample File Repository Connector\",\n               \"displayName\":\"OMRS Sample File Repository Connector\",\n               \"description\":\"OMRS Sample File Repository Connector that issues calls to the file system.\",\n                \"connectorProviderClassName\": \"org.odpi.egeria.connectors.juxt.crux.repositoryconnector.CruxOMRSRepositoryConnectorProvider\"\n   },\n   \"embeddedConnections\":[\n      {\n         \"class\":\"EmbeddedConnection\",\n         \"headerVersion\":0,\n         \"position\":0,\n         \"displayName\":\"embedded in memory\",\n         \"embeddedConnection\":{\n            \"class\":\"Connection\",\n            \"headerVersion\":0,\n            \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"65cc9091-757f-4bcd-b937-426160be8bc2\",\n               \"qualifiedName\":\"Egeria:OMRSRepositoryConnector:InMemory\",\n               \"displayName\":\"In Memory OMRS Repository Connector\",\n               \"description\":\"Native open metadata repository connector that maps open metadata calls to a set of in memory hash maps - demo use only.\",\n               \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider\"\n            }\n         }\n      }\n   ]\n}\n"
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/local-repository/mode/repository-proxy/connection",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"local-repository",
+						"mode",
+						"repository-proxy",
+						"connection"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Configure a local repository event mapper connection Copy",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n         \"class\":\"Connection\",\n         \"connectorType\":{\n            \"class\":\"ConnectorType\",\n            \"connectorProviderClassName\":\"org.odpi.egeria.connectors.file.eventmapper.FileOMRSRepositoryEventMapperProvider\"\n         },\n         \"endpoint\":{\n            \"class\":\"Endpoint\",\n            \"address\":\"{{folderpathtomonitor}}\",\n            \"protocol\":\"file:\"\n         },\n          \"configurationProperties\": {\n          \"qualifiedNamePrefix\": \"{{qualifiedNamePrefix}}\",\n          \"refreshTimeInterval\": {{refreshTimeInterval}}\n          },\n          \"guid\": \"09dcef5f-94e6-44da-8d3c-1f299daa4221\",\n          \"qualifiedName\": \"OMRS Sample File Event Mapper Connector\",\n          \"DisplayName\":\"OMRS Sample File Event Mapper Connector that polls for content.\"       \n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/local-repository/event-mapper-connection",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"local-repository",
+						"event-mapper-connection"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Start the cocoFile instance",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/instance",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"instance"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Retrieve the updated configuration for the cocofile",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/configuration",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}",
+						"configuration"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		}
+	]
+}
