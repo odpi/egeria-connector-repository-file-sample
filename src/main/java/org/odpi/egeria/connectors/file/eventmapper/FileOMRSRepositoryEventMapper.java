@@ -358,7 +358,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
             int typesAvailableCount = 0;
             int retryCount = 0;
-            while ((typesAvailableCount != supportedCount) && retryCount < 10) {
+            while ((typesAvailableCount != supportedCount) && retryCount < 20) {
                 auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_LOOP.getMessageDefinition(typesAvailableCount + "", supportedCount + "", retryCount + ""));
                 // only come out the while loop when we can get all of the supported types in one iteration.
                 typesAvailableCount = 0;

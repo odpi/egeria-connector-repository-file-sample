@@ -23,7 +23,6 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
         implements VirtualConnectorExtension {
 
     private List<Connector> embeddedConnectors = null;
-    private OMRSRepositoryConnector embeddedConnector = null;
 
     /**
      * Default constructor used by the OCF Connector Provider.
