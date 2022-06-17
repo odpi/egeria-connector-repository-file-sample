@@ -39,7 +39,10 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
     //    private static final Logger log = LoggerFactory.getLogger(FileOMRSRepositoryEventMapper.class);
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    Map<String, String> typeNameToGuidMap = null;
+    private Map<String, String> typeNameToGuidMap = null;
+
+
+    private String userId = null;
     /**
      * Default polling refresh interval in milliseconds.
      */
@@ -112,7 +115,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
         } else {
             setFolderLocation(endpointProperties.getAddress());
             metadataCollection = this.repositoryConnector.getMetadataCollection();
-            metadataCollectionId = metadataCollection.getMetadataCollectionId("user");
+            metadataCollectionId = metadataCollection.getMetadataCollectionId(this.userId);
         }
     }
 
@@ -141,11 +144,15 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             }
         }
         Map<String, Object> configurationProperties = connectionProperties.getConfigurationProperties();
-
+         this.userId = connectionProperties.getUserId();
+         if (this.userId == null) {
+             // default
+             this.userId = "OMAGServer";
+         }
         if (configurationProperties != null) {
-            Integer configuredRefreshinterval = (Integer) configurationProperties.get(FileOMRSRepositoryEventMapperProvider.REFRESH_TIME_INTERVAL);
-            if (configuredRefreshinterval != null) {
-                refreshInterval = configuredRefreshinterval * 1000;
+            Integer configuredRefreshInterval = (Integer) configurationProperties.get(FileOMRSRepositoryEventMapperProvider.REFRESH_TIME_INTERVAL);
+            if (configuredRefreshInterval != null) {
+                refreshInterval = configuredRefreshInterval * 1000;
             }
             String configuredQualifiedNamePrefix = (String) configurationProperties.get(FileOMRSRepositoryEventMapperProvider.QUALIFIED_NAME_PREFIX);
             if (configuredQualifiedNamePrefix != null) {
@@ -162,7 +169,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
      * Class to poll for file content
      */
     private class PollingThread implements Runnable {
-
+        Thread worker = null;
         void start() {
             Thread worker = new Thread(this);
             worker.start();
@@ -203,7 +210,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             String methodName = "getRelationshipsForEntityHelper";
             List<Relationship> relationships = null;
             try {
-                relationships = metadataCollection.getRelationshipsForEntity("userId", entityGUID, relationshipTypeGUID, 0, null, null, null, null, 0);
+                relationships = metadataCollection.getRelationshipsForEntity(userId, entityGUID, relationshipTypeGUID, 0, null, null, null, null, 0);
             } catch (InvalidParameterException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e, repositoryConnector.getServerName(), methodName);
             } catch (RepositoryErrorException e) {
@@ -224,7 +231,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             return relationships;
         }
 
-        private EntityDetail getEntityDetail(String userId, String guid) throws ConnectorCheckedException {
+        private EntityDetail getEntityDetail(String guid) throws ConnectorCheckedException {
             String methodName = "getEntityDetail";
             EntityDetail entityDetail = null;
             try {
@@ -287,7 +294,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                                                  startEntityGUID,
                                                                  relationship);
                 String guid = proxy.getGUID();
-                EntityDetail otherEndEntity = getEntityDetail("Userid", guid);
+                EntityDetail otherEndEntity = getEntityDetail(guid);
                 entityList.add(otherEndEntity);
                 relationshipList.add(relationship);
                 otherEndGuids.add(otherEndEntity.getGUID());
@@ -320,7 +327,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         } catch (InterruptedException e) {
                             // should not happen as there is only one thread
                             // if it happens then continue in the while
-                            // TODO Error
                             auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_INTERRUPTED_EXCEPTION.getMessageDefinition());
                         }
 
@@ -331,6 +337,9 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         } else {
                             auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION_WITH_CAUSE.getMessageDefinition(e.getMessage(), e.getCause().getMessage()));
                         }
+                    } catch (Exception e) {
+                        // catch everything else
+                        auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_POLL_LOOP_GOT_AN_EXCEPTION_WITH_CAUSE.getMessageDefinition(e.getMessage(), e.getCause().getMessage()));
                     } finally {
                         // stop the thread if we came out of the loop.
                         this.stop();
@@ -339,7 +348,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             }
         }
 
-        private void getRequiredTypes() {
+        private void getRequiredTypes() throws ConnectorCheckedException {
             String methodName = "getRequiredTypes";
             final int supportedCount = supportedTypeNames.size();
 
@@ -365,14 +374,16 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                 }
                 if (typesAvailableCount < supportedCount) {
                     //delay for 1 second and then retry
-                    auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_LOOP_PRE_WAIT.getMessageDefinition());
+
                     try {
-                        Thread.sleep(1000);  // TODO config ?
+                        Thread.sleep(1000);  // TODO Should this be in configuration?
                         retryCount++;
-                        auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_LOOP_POST_WAIT.getMessageDefinition(retryCount + ""));
                     } catch (InterruptedException e) {
                         // should not happen as there is only one thread
-                        // if it happens then continue in the while
+                        // if it does happen it would result in a lower duration for the sleep
+                        //
+                        // Increment the retry count, in case this happens everytime
+                        retryCount++;
                         auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_ACQUIRING_TYPES_LOOP_INTERRUPTED_EXCEPTION.getMessageDefinition());
                     }
                 } else if (typesAvailableCount == supportedCount) {
@@ -381,9 +392,8 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
                 }
 
-                if (retryCount == 10) { // TODO config ?
-
-                    //TODO error
+                if (retryCount == 20) { // TODO  Should this be in configuration?
+                    raiseConnectorCheckedException(FileOMRSErrorCode.EVENT_MAPPER_CANNOT_GET_TYPES, methodName, null );
                 }
             }
         }
@@ -426,8 +436,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                                                             CONNECTION,
                                                                             name,
                                                                             canonicalName);
-                    System.err.println("connection reference copy is " + connectionEntity.toString());
-                    // TODO add more connection attributes?
+
                     issueSaveEntityReferenceCopy(connectionEntity);
 
                     name = baseName + "-" + CONNECTOR_TYPE;
@@ -436,7 +445,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                                                                 CONNECTOR_TYPE,
                                                                                 name,
                                                                                 canonicalName);
-                    // TODO add more connection attributes?
                     issueSaveEntityReferenceCopy(connectionTypeEntity);
 
 
@@ -460,8 +468,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                                                  methodName);
                     endpointEntity.setProperties(instanceProperties);
 
-
-                    // TODO add more endpoint attributes
                     issueSaveEntityReferenceCopy(endpointEntity);
 
                     // create relationships
@@ -491,14 +497,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                                 endPointGuid,
                                                 ENDPOINT
                                                );
-                /*
-                    TODO add
-                        final String attribute1Name            = "createTime";
-                        final String attribute1Description     = "Creation time of the data store.";
-                        final String attribute2Name            = "modifiedTime";
-                        final String attribute2Description     = "Last known modification time.";
-                 */
-
                 }
             }
         }
@@ -524,11 +522,10 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
         private void issueSaveEntityReferenceCopy(EntityDetail entityToAdd) throws ConnectorCheckedException {
             String methodName = "issueSaveEntityReferenceCopy";
-            System.err.println("issueSaveEntityReferenceCopy " + entityToAdd);
 
             try {
                 metadataCollection.saveEntityReferenceCopy(
-                        "userId",
+                        userId,
                         entityToAdd);
             } catch (InvalidParameterException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
@@ -564,7 +561,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                 relationship = repositoryHelper.getSkeletonRelationship(methodName,
                                                                         metadataCollectionId,
                                                                         InstanceProvenanceType.LOCAL_COHORT,
-                                                                        "userId",
+                                                                        userId,
                                                                         relationshipTypeName);
             } catch (TypeErrorException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
@@ -575,7 +572,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             try {
                 relationshipGUID = Base64.getUrlEncoder().encodeToString(connectionToAssetCanonicalName.getBytes("UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                raiseConnectorCheckedException(FileOMRSErrorCode.ENCODING_EXCEPTION, methodName, e, "connectionToAssetCanonicalName", connectionToAssetCanonicalName );
             }
 
             relationship.setGUID(relationshipGUID);
@@ -588,7 +585,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             relationship.setEntityTwoProxy(entityProxy2);
             try {
                 metadataCollection.saveRelationshipReferenceCopy(
-                        "userId",
+                        userId,
                         relationship);
             } catch (InvalidParameterException e) {
                 raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
@@ -621,7 +618,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             InstanceType type = null;
             try {
                 if (typeDefSummary == null) {
-                    System.err.println(methodName + " Typename cannot be found " + typeName);
                     throw new TypeErrorException(FileOMRSErrorCode.TYPEDEF_NAME_NOT_KNOWN.getMessageDefinition(repositoryName, methodName, typeName),
                                                  this.getClass().getName(),
                                                  methodName);
@@ -662,7 +658,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             try {
                 guid = Base64.getUrlEncoder().encodeToString(canonicalName.getBytes("UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                System.err.println("Error UnsupportedEncodingException " + e.getMessage());
+                raiseConnectorCheckedException(FileOMRSErrorCode.ENCODING_EXCEPTION, methodName, e, "canonicalName",canonicalName );
             }
 
 
@@ -692,7 +688,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
             try {
                 if (typeDef == null) {
-                    System.err.println(methodName + " Typename cannot be found " + typeName);
                     throw new TypeErrorException(FileOMRSErrorCode.TYPEDEF_NAME_NOT_KNOWN.getMessageDefinition(metadataCollectionName, methodName, typeName),
                                                  this.getClass().getName(),
                                                  originalMethodName);
@@ -732,15 +727,16 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                                                                           PropertyErrorException,
                                                                           PagingErrorException,
                                                                           FunctionNotSupportedException,
-                                                                          UserNotAuthorizedException {
+                                                                          UserNotAuthorizedException,
+                                                                          ConnectorCheckedException {
+            String methodName = "getEntitiesByTypeGuid";
             String typeGUID = typeNameToGuidMap.get(typeName);
             if (typeGUID == null) {
-//                throw new RepositoryErrorException()
-                // TODO
+                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, null, repositoryConnector.getServerName());
                 return null;
             } else {
                 return metadataCollection.findEntities(
-                        "userId",    //TODO get from config
+                        userId,
                         typeGUID,
                         null,
                         null,
@@ -753,35 +749,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                         0);
             }
         }
-
-
-        // Uncomment when we start to use this method
-//        private List<Relationship> getRelationshipsByTypeGuid(String typeName) throws
-//                                                                          InvalidParameterException,
-//                                                                          RepositoryErrorException,
-//                                                                          TypeErrorException,
-//                                                                          PropertyErrorException,
-//                                                                          PagingErrorException,
-//                                                                          FunctionNotSupportedException,
-//                                                                          UserNotAuthorizedException {
-//            String typeGUID = typeNameToGuidMap.get(typeName);
-//            if (typeGUID == null) {
-//                // TODO throw Exception
-//                return null;
-//            } else {
-//                return metadataCollection.findRelationships(
-//                        "userId",    //TODO get from config
-//                       typeGUID,
-//                        null,
-//                        null,
-//                        0,
-//                        null,
-//                        null,
-//                        null,
-//                        null,
-//                        0);
-//            }
-//        }
     }
 
 
@@ -795,55 +762,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
         pollingThread.stop();
         auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_SHUTDOWN.getMessageDefinition(repositoryConnector.getServerName()));
     }
-
-
-//    /**
-//     * Sends a refresh entity request event.
-//     *
-//     * @param typeDefGUID unique identifier of requested entity's TypeDef
-//     * @param typeDefName unique name of requested entity's TypeDef
-//     * @param entityGUID unique identifier of requested entity
-//     * @param homeMetadataCollectionId identifier of the metadata collection that is the home to this entity
-//     */
-//    public void sendRefreshEntityRequest(String typeDefGUID,
-//                                         String typeDefName,
-//                                         String entityGUID,
-//                                         String homeMetadataCollectionId) {
-//        repositoryEventProcessor.processRefreshEntityRequested(
-//                sourceName,
-//                metadataCollectionId,
-//                localServerName,
-//                localServerType,
-//                localOrganizationName,
-//                typeDefGUID,
-//                typeDefName,
-//                entityGUID,
-//                homeMetadataCollectionId);
-//    }
-//
-//    /**
-//     * Sends a refresh relationship request event.
-//     *
-//     * @param typeDefGUID the guid of the TypeDef for the relationship used to verify the relationship identity
-//     * @param typeDefName the name of the TypeDef for the relationship used to verify the relationship identity
-//     * @param relationshipGUID unique identifier of the relationship
-//     * @param homeMetadataCollectionId unique identifier for the home repository for this relationship
-//     */
-//    public void sendRefreshRelationshipRequest(String typeDefGUID,
-//                                               String typeDefName,
-//                                               String relationshipGUID,
-//                                               String homeMetadataCollectionId) {
-//        repositoryEventProcessor.processRefreshRelationshipRequest(
-//                sourceName,
-//                metadataCollectionId,
-//                localServerName,
-//                localServerType,
-//                localOrganizationName,
-//                typeDefGUID,
-//                typeDefName,
-//                relationshipGUID,
-//                homeMetadataCollectionId);
-//    }
 
     /**
      * Throws a ConnectorCheckedException based on the provided parameters.

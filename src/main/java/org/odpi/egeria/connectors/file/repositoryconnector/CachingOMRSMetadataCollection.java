@@ -5,23 +5,16 @@ package org.odpi.egeria.connectors.file.repositoryconnector;
 import org.odpi.egeria.connectors.file.auditlog.FileOMRSErrorCode;
 
 import org.odpi.openmetadata.frameworks.connectors.Connector;
-import org.odpi.openmetadata.frameworks.connectors.ConnectorBroker;
-import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectionCheckedException;
-import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectorCheckedException;
-import org.odpi.openmetadata.frameworks.connectors.properties.beans.Connection;
-import org.odpi.openmetadata.frameworks.connectors.properties.beans.ConnectorType;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSDynamicTypeMetadataCollectionBase;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryConnector;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.search.SearchClassifications;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.search.SearchProperties;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSFixedTypeMetadataCollectionBase;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.MatchCriteria;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.SequencingOrder;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.instances.*;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryHelper;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.repositoryconnector.OMRSRepositoryValidator;
-import org.odpi.openmetadata.frameworks.auditlog.AuditLog;
 import org.odpi.openmetadata.repositoryservices.ffdc.exception.*;
 
 
@@ -49,7 +42,10 @@ import java.util.*;
  */
 public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollectionBase {
 
-    OMRSMetadataCollection embeddedMetadataCollection = null;
+    private OMRSMetadataCollection embeddedMetadataCollection = null;
+
+    private OMRSRepositoryConnector validEmbeddedOMRSConnector = null;
+
 
     /**
      * The caching OMRS metadata collection is initialised with an embedded connector, which all supported OMRS calls are delegated to.
@@ -61,7 +57,7 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
      *                             to build valid type definitions (TypeDefs), entities and relationships.
      * @param repositoryValidator  validator class for checking open metadata repository objects and parameters
      * @param metadataCollectionId unique identifier for the repository
-     * @param embeddedConnector    embedded connector to which all calls are delagated to
+     * @param configuredEmbeddedConnectors the configured embedded connectors
      * @throws RepositoryErrorException repository error exception
      */
 
@@ -70,22 +66,64 @@ public class CachingOMRSMetadataCollection extends OMRSDynamicTypeMetadataCollec
                                          OMRSRepositoryHelper repositoryHelper,
                                          OMRSRepositoryValidator repositoryValidator,
                                          String metadataCollectionId,
-                                         OMRSRepositoryConnector embeddedConnector
+                                         List<Connector> configuredEmbeddedConnectors
                                         ) throws RepositoryErrorException {
         super(parentConnector,
               repositoryName,
               repositoryHelper,
               repositoryValidator,
               metadataCollectionId);
+        String methodName = "CachingOMRSMetadataCollection()";
+        // check that we have one embedded OMRS connector, error if not
+
+       if (configuredEmbeddedConnectors == null || configuredEmbeddedConnectors.isEmpty()) {
+           raiseRepositoryErrorException(FileOMRSErrorCode.EMBEDDED_CONNECTOR_NOT_SUPPLIED, methodName, null, repositoryName);
+       } else if (configuredEmbeddedConnectors.size() > 1) {
+           raiseRepositoryErrorException(FileOMRSErrorCode.MULTIPLE_EMBEDDED_CONNECTORS_SUPPLIED, methodName, null, repositoryName);
+       } else {
+           Connector connector = configuredEmbeddedConnectors.get(0);
+           if (connector instanceof  OMRSRepositoryConnector) {
+               validEmbeddedOMRSConnector = (OMRSRepositoryConnector) connector;
+           } else {
+               raiseRepositoryErrorException(FileOMRSErrorCode.EMBEDDED_CONNECTOR_WRONG_TYPE, methodName, null, repositoryName);
+           }
+       }
 
         this.metadataCollectionId = metadataCollectionId;
         // initialise the embedded connector and stores its collection
-        embeddedConnector.setMetadataCollectionName(metadataCollectionName + "-embedded");
-        embeddedConnector.setRepositoryHelper(repositoryHelper);
-        embeddedConnector.setRepositoryValidator(repositoryValidator);
+        validEmbeddedOMRSConnector.setMetadataCollectionName(metadataCollectionName + "-embedded");
+        validEmbeddedOMRSConnector.setRepositoryHelper(repositoryHelper);
+        validEmbeddedOMRSConnector.setRepositoryValidator(repositoryValidator);
         // this needs to be done last as it creates the embedded metadata collection if there is not one
-        embeddedConnector.setMetadataCollectionId(metadataCollectionId + "-embedded");
-        this.embeddedMetadataCollection = embeddedConnector.getMetadataCollection();
+        validEmbeddedOMRSConnector.setMetadataCollectionId(metadataCollectionId + "-embedded");
+
+        this.embeddedMetadataCollection = validEmbeddedOMRSConnector.getMetadataCollection();
+    }
+    public OMRSRepositoryConnector getEmbeddedOMRSConnector() {
+        return validEmbeddedOMRSConnector;
+    }
+
+
+    /**
+     * Throws a RepositoryErrorException based on the provided parameters.
+     *
+     * @param errorCode the error code for the exception
+     * @param methodName the method name throwing the exception
+     * @param cause the underlying cause of the exception (if any, otherwise null)
+     * @param params any additional parameters for formatting the error message
+     * @throws RepositoryErrorException error contacting the repository
+     */
+    private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Exception cause, String ...params) throws RepositoryErrorException {
+        if (cause == null) {
+            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
+                                                this.getClass().getName(),
+                                                methodName);
+        } else {
+            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
+                                                this.getClass().getName(),
+                                                methodName,
+                                                cause);
+        }
     }
 
     // ** Delegate all the collection methods we care about to the embedded connector collection.

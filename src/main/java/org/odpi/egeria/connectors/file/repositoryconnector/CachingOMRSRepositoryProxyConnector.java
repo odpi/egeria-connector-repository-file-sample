@@ -21,6 +21,8 @@ import java.util.List;
  */
 public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
         implements VirtualConnectorExtension {
+
+    private List<Connector> embeddedConnectors = null;
     private OMRSRepositoryConnector embeddedConnector = null;
 
     /**
@@ -48,13 +50,10 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
                     raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
                 }
             }
-            try {
-                this.embeddedConnector.start();
-            } catch (ConnectorCheckedException e) {
-                throw new RuntimeException(e);
-            }
+            // start the embedded collection
+            CachingOMRSMetadataCollection cachingCollection = (CachingOMRSMetadataCollection)metadataCollection;
+            cachingCollection.getEmbeddedOMRSConnector().start();
         }
-
 
         auditLog.logMessage(methodName, FileOMRSAuditCode.REPOSITORY_SERVICE_STARTED.getMessageDefinition(getServerName()));
 
@@ -90,7 +89,7 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
                                                                    repositoryHelper,
                                                                    repositoryValidator,
                                                                    metadataCollectionId,
-                                                                   embeddedConnector);
+                                                                   embeddedConnectors);
 
 
 
@@ -98,18 +97,8 @@ public class CachingOMRSRepositoryProxyConnector extends OMRSRepositoryConnector
 
     @Override
     public void initializeEmbeddedConnectors(List<Connector> embeddedConnectors) {
-       if (embeddedConnectors == null || embeddedConnectors.isEmpty()) {
-           // TODO error
-           System.err.println("no embedded connectors supplied  ");
-       } else if (embeddedConnectors.size() > 1) {
-           // TODO error
-           System.err.println("More than one embedded connectors supplied  ");
-       } else {
-           Connector connector = embeddedConnectors.get(0);
-           if (connector instanceof  OMRSRepositoryConnector) {
-               this.embeddedConnector = (OMRSRepositoryConnector) connector;
-           }
-       }
+
+       this.embeddedConnectors = embeddedConnectors;
     }
 
     /**
