@@ -115,6 +115,10 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
         } else {
             setFolderLocation(endpointProperties.getAddress());
             metadataCollection = this.repositoryConnector.getMetadataCollection();
+            if (this.userId == null) {
+                // default
+                this.userId = "OMAGServer";
+            }
             metadataCollectionId = metadataCollection.getMetadataCollectionId(this.userId);
         }
     }
