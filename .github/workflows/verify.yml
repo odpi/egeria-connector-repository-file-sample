@@ -24,6 +24,5 @@ jobs:
       - name: Upload Connector
         uses: actions/upload-artifact@v3
         with:
-          # TODO: verify - Update name & artifacts to upload
           name:  Jar
           path: '**/build/libs/*.jar'
