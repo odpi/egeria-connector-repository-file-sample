@@ -26,13 +26,11 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-// TODO: Specify group, name, description, version of new code being built
 group = 'org.odpi.egeria'
 version = '1.0-SNAPSHOT'
 ext.name = 'New Egeria code'
 description = 'New code for Egeria'
 
-// TODO: Specify Dependency versions as variables
 ext {
     egeriaversion = '3.8'
     slf4jVersion = '1.7.36'
@@ -43,7 +41,6 @@ ext {
 }
 
 // For a single module, add here. For multiple modules, refactor and use constraints (see main egeria build.gradle for an example)
-// TODO: Update dependencies for this module
 dependencies {
 
     // Only used for build - already present in server chassis at runtime - similar to 'provided' with maven
@@ -152,10 +149,9 @@ publishing {
                     }
                 }
                 scm {
-                    // TODO: Update references to git source for this particular repository
-                    connection = 'scm:git:git://github.com/odpi/egeria-template-newrepo.git'
-                    developerConnection = 'scm:git:ssh://github.com/odpi/egeria/egeria-template-newrepo.git'
-                    url = 'http://github.com/odpi/egeria-template-newrepo/'
+                    connection = 'scm:git:git://github.com/odpi/egeria-connector-repository-file-sample.git'
+                    developerConnection = 'scm:git:ssh://github.com/odpi/egeria-connector-repository-file-sample.git'
+                    url = 'http://github.com/odpi/egeria-connector-repository-file-sample/tree/main'
                 }
             }
             // Override the project name & description for the pom based on properties set in the child build.gradle (hard to default & required for maven central)
