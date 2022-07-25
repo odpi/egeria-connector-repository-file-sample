@@ -25,7 +25,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
-
+      - uses: gradle/wrapper-validation-action@v1
       - name: Build with Gradle & Release artifacts
         run: ./gradlew publish
         # Import secrets needed for code signing and distribution
