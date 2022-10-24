@@ -79,12 +79,14 @@ Similar to other postman collections that Egeria ships; this postman collection 
  Note that the Postman requests are named starting with a number. You should run the posts in numerical order, when you have completed 3,
 you should decide which embedded connector you want to run, choose either:
 * 4a. for [in memory repository connector](https://egeria-project.org/connectors/repository/in-memory/overview/?h=memory) 
-* 4b. for [XTDB](https://egeria-project.org/connectors/repository/xtdb/?h=xtdb). Please ensure that the XTDB jar file is available to the server
+* 4b. for [XTDB](https://egeria-project.org/connectors/repository/xtdb/?h=xtdb). Please ensure that 
+  * the XTDB connector jar file (the jar file built from [this repository](https://github.com/odpi/egeria-connector-xtdb) is available to the server. 
+  * Runtime XTDB jar files are available to the server as described [Pre-built XTDB jar file ](https://docs.xtdb.com/administration/1.22.0/installing/) for example xtdb-in-memory.jar  
+    
 
 ### Verifying it is working
 * The audit log content shows progress. 
-* You can see the content of the connector using the [Repository Explorer from the 
-Eco-system UI](https://egeria-project.org/guides/ecosystem-ui/rex-user-guide/?h=repository+explorer). Be aware that you 
+* You can see the content of the connector using the [Repository Explorer from the Eco-system UI](https://egeria-project.org/guides/ecosystem-ui/rex-user-guide/?h=repository+explorer). Be aware that you 
 will need to [configure the Rex view service](https://egeria-project.org/guides/admin/servers/configuring-a-view-server/?h=view+server+configuration#integration-view-services)
 to include the repository proxy server, with an entry in the configuration similar to this (where cocofile is the Server name): 
 
