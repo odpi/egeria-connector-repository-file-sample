@@ -9,8 +9,8 @@ This is a [repository proxy](https://egeria-project.org/concepts/repository-prox
 that provides an example of bringing in the metadata associated with files in a folder, into Egeria.
 
 It showcases a pattern, whereby the [OMRS Repository connector](https://egeria-project.org/concepts/repository-connector/?h=repository+connector)  
-has an embedded Repository connector that caches content. In the past, repository proxies implemented each of the find requires.
-In this pattern, the OMRS requests are delegated down to the embedded OMRS repository simplifying development. 
+has an embedded Repository connector that caches content. In the past, repository proxies implemented each of the find requests.
+In this pattern, the OMRS requests are delegated down to the embedded OMRS repository; simplifying development. 
 
 If a member of the [cohort](https://egeria-project.org/services/omrs/cohort/?h=cohort) does not issue federated queries,
 then it cannot get existing content from a 3rd party repository. This sample gives an example on how an event mapper can be written
@@ -22,10 +22,7 @@ to poll the 3rd party technology and send a batched event for each asset. The ba
 * endpoint
 * relationships
 
-The repository proxy is made of :
-* A caching repository connector, that delegates its OMRS calls to the embedded collection.
-* An event mapper that polls for the metadata associated with files in a folder
-* Audit and error log definitions used by the 2 connectors.
+The OMRS caching repository connector needs to be configured to store the metadata.  
 
 The pattern is:
 ![Caching Repository proxy components](images/File%20sample.drawio.png)
@@ -107,15 +104,15 @@ Amend the `serverName` to match your server (the 'server' in the postman collect
 behind a repository proxy would be to:
 * issue gueries to the cohort.
 * get add, update and delete information via OMRS events
-If these federated queries are beeng issued, then there is no need to event mapper to poll.
-2) polling as per this pattern means that all content is cached into the embedded repository. This 
+If these federated queries are being issued, then there is no need to event mapper to poll.
+2) polling as per this pattern, means that all content is cached into the embedded repository. This 
 may not be desirable if there is a large amount of metadata in the 3rd party technology.
 3) The batched events contain all the information associated with an asset. If there was a listener listening to the 
 3rd party technology (the file system here) then the listener could pick up incremental changes and 
 the cache would be kept up to date.
 4) The batched events could flood the cohort(s) if the interval is too short and there is a lot of metadata.
 5) An integration connector or standard repository proxy pattern could be preferable for many setups.
-6) If there is a requirement to write to the 3rd party technology then the OMRS repository connector 
+6) If there is a requirement to write to the 3rd party technology, then the OMRS repository connector 
 would need to be re-implemented as it would need to include code to write to the 3rd party technology. 
 
 

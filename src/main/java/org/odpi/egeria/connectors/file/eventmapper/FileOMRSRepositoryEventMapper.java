@@ -5,7 +5,8 @@ package org.odpi.egeria.connectors.file.eventmapper;
 
 import org.odpi.egeria.connectors.file.auditlog.FileOMRSAuditCode;
 import org.odpi.egeria.connectors.file.auditlog.FileOMRSErrorCode;
-import org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSRepositoryProxyConnector;
+import org.odpi.openmetadata.adapters.repositoryservices.caching.repository.CachedRepositoryAccessor;
+import org.odpi.openmetadata.adapters.repositoryservices.caching.repositoryconnector.CachingOMRSRepositoryProxyConnector;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.ConnectorCheckedException;
 import org.odpi.openmetadata.frameworks.connectors.properties.EndpointProperties;
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.OMRSMetadataCollection;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 //        implements OpenMetadataTopicListener
 {
-
+    CachedRepositoryAccessor cachedRepositoryAccessor = null;
     private static final String DATA_FILE = "DataFile";
     private static final String CONNECTION = "Connection";
     private static final String CONNECTOR_TYPE = "ConnectorType";
@@ -167,6 +168,65 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
         this.pollingThread = new PollingThread();
         pollingThread.start();
     }
+
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    synchronized public void disconnect() throws ConnectorCheckedException {
+        super.disconnect();
+        final String methodName = "disconnect";
+        pollingThread.stop();
+        auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_SHUTDOWN.getMessageDefinition(repositoryConnector.getServerName()));
+    }
+
+    /**
+     * Throws a ConnectorCheckedException based on the provided parameters.
+     *
+     * @param errorCode  the error code for the exception
+     * @param methodName the method name throwing the exception
+     * @param cause      the underlying cause of the exception (if any, otherwise null)
+     * @param params     any additional parameters for formatting the error message
+     * @throws ConnectorCheckedException always
+     */
+    private void raiseConnectorCheckedException(FileOMRSErrorCode errorCode, String methodName, Exception cause, String... params) throws ConnectorCheckedException {
+        if (cause == null) {
+            throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
+                    this.getClass().getName(),
+                    methodName);
+        } else {
+            throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
+                    this.getClass().getName(),
+                    methodName,
+                    cause);
+        }
+    }
+
+    /**
+     * Throws a RepositoryErrorException using the provided parameters.
+     *
+     * @param errorCode  the error code for the exception
+     * @param methodName the name of the method throwing the exception
+     * @param cause      the underlying cause of the exception (or null if none)
+     * @param params     any parameters for formatting the error message
+     * @throws RepositoryErrorException always
+     */
+    private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String... params) throws RepositoryErrorException {
+        if (cause == null) {
+            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
+                    this.getClass().getName(),
+                    methodName);
+        } else {
+            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
+                    this.getClass().getName(),
+                    methodName,
+                    cause);
+        }
+    }
+
+
 
 
     /**
@@ -319,6 +379,7 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                 while (running.get()) {
                     try {
                         getRequiredTypes();
+                        cachedRepositoryAccessor = new CachedRepositoryAccessor(userId, repositoryConnector.getServerName(), metadataCollection);
                         // call the repository connector to refresh its contents.
                         refreshRepository();
                         // send the batch event per asset
@@ -424,83 +485,86 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
                     } catch (IOException e) {
                         raiseConnectorCheckedException(FileOMRSErrorCode.IOEXCEPTION_ACCESSING_FILE, methodName, e);
                     }
-                    Map<String, String> attributeMap = getDataFileProperties(baseName);
+                    // ignore hidden files
+                    if (!baseName.startsWith(".")) {
+                        Map<String, String> attributeMap = getDataFileProperties(baseName);
 
-                    EntityDetail dataFileEntity = getEntityDetailSkeleton(methodName,
-                                                                          DATA_FILE,
-                                                                          baseName,
-                                                                          baseCanonicalName,
-                                                                          attributeMap);
-                    issueSaveEntityReferenceCopy(dataFileEntity);
+                        EntityDetail dataFileEntity = getEntityDetailSkeleton(methodName,
+                                DATA_FILE,
+                                baseName,
+                                baseCanonicalName,
+                                attributeMap);
+                        cachedRepositoryAccessor.saveEntityReferenceCopyToStore(dataFileEntity);
 
-                    String name = baseName + "-connection";
-                    String canonicalName = baseCanonicalName + "-connection";
+                        String name = baseName + "-connection";
+                        String canonicalName = baseCanonicalName + "-connection";
 
-                    EntityDetail connectionEntity = getEntityDetailSkeleton(methodName,
-                                                                            CONNECTION,
-                                                                            name,
-                                                                            canonicalName);
+                        EntityDetail connectionEntity = getEntityDetailSkeleton(methodName,
+                                CONNECTION,
+                                name,
+                                canonicalName);
 
-                    issueSaveEntityReferenceCopy(connectionEntity);
+                        cachedRepositoryAccessor.saveEntityReferenceCopyToStore(connectionEntity);
 
-                    name = baseName + "-" + CONNECTOR_TYPE;
-                    canonicalName = baseCanonicalName + "-" + CONNECTOR_TYPE;
-                    EntityDetail connectionTypeEntity = getEntityDetailSkeleton(methodName,
-                                                                                CONNECTOR_TYPE,
-                                                                                name,
-                                                                                canonicalName);
-                    issueSaveEntityReferenceCopy(connectionTypeEntity);
+                        name = baseName + "-" + CONNECTOR_TYPE;
+                        canonicalName = baseCanonicalName + "-" + CONNECTOR_TYPE;
+                        EntityDetail connectionTypeEntity = getEntityDetailSkeleton(methodName,
+                                CONNECTOR_TYPE,
+                                name,
+                                canonicalName);
+                        cachedRepositoryAccessor.saveEntityReferenceCopyToStore(connectionTypeEntity);
 
 
-                    name = baseName + "-" + ENDPOINT;
-                    canonicalName = baseCanonicalName + "-" + ENDPOINT;
+                        name = baseName + "-" + ENDPOINT;
+                        canonicalName = baseCanonicalName + "-" + ENDPOINT;
 
-                    EntityDetail endpointEntity = getEntityDetailSkeleton(methodName,
-                                                                          ENDPOINT,
-                                                                          name,
-                                                                          canonicalName);
-                    InstanceProperties instanceProperties = endpointEntity.getProperties();
-                    repositoryHelper.addStringPropertyToInstance(methodName,
-                                                                 null,
-                                                                 "protocol",
-                                                                 "file",
-                                                                 methodName);
-                    repositoryHelper.addStringPropertyToInstance(methodName,
-                                                                 null,
-                                                                 "networkAddress",
-                                                                 baseCanonicalName,
-                                                                 methodName);
-                    endpointEntity.setProperties(instanceProperties);
+                        EntityDetail endpointEntity = getEntityDetailSkeleton(methodName,
+                                ENDPOINT,
+                                name,
+                                canonicalName);
+                        InstanceProperties instanceProperties = endpointEntity.getProperties();
+                        repositoryHelper.addStringPropertyToInstance(methodName,
+                                null,
+                                "protocol",
+                                "file",
+                                methodName);
+                        repositoryHelper.addStringPropertyToInstance(methodName,
+                                null,
+                                "networkAddress",
+                                baseCanonicalName,
+                                methodName);
+                        endpointEntity.setProperties(instanceProperties);
 
-                    issueSaveEntityReferenceCopy(endpointEntity);
+                        cachedRepositoryAccessor.saveEntityReferenceCopyToStore(endpointEntity);
 
-                    // create relationships
+                        // create relationships
 
-                    // entity guids used to create proxies
-                    String connectionGuid = connectionEntity.getGUID();
-                    String dataFileGuid = dataFileEntity.getGUID();
-                    String connectionTypeGuid = connectionTypeEntity.getGUID();
-                    String endPointGuid = endpointEntity.getGUID();
+                        // entity guids used to create proxies
+                        String connectionGuid = connectionEntity.getGUID();
+                        String dataFileGuid = dataFileEntity.getGUID();
+                        String connectionTypeGuid = connectionTypeEntity.getGUID();
+                        String endPointGuid = endpointEntity.getGUID();
 
-                    // create the 3 relationships
-                    createReferenceRelationship(CONNECTION_TO_ASSET,
-                                                connectionGuid,
-                                                CONNECTION,
-                                                dataFileGuid,
-                                                DATA_FILE);
+                        // create the 3 relationships
+                        createReferenceRelationship(CONNECTION_TO_ASSET,
+                                connectionGuid,
+                                CONNECTION,
+                                dataFileGuid,
+                                DATA_FILE);
 
-                    createReferenceRelationship(CONNECTION_CONNECTOR_TYPE,
-                                                connectionGuid,
-                                                CONNECTION,
-                                                connectionTypeGuid,
-                                                CONNECTOR_TYPE);
+                        createReferenceRelationship(CONNECTION_CONNECTOR_TYPE,
+                                connectionGuid,
+                                CONNECTION,
+                                connectionTypeGuid,
+                                CONNECTOR_TYPE);
 
-                    createReferenceRelationship(CONNECTION_ENDPOINT,
-                                                connectionGuid,
-                                                CONNECTION,
-                                                endPointGuid,
-                                                ENDPOINT
-                                               );
+                        createReferenceRelationship(CONNECTION_ENDPOINT,
+                                connectionGuid,
+                                CONNECTION,
+                                endPointGuid,
+                                ENDPOINT
+                        );
+                    }
                 }
             }
         }
@@ -522,97 +586,6 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
 
 
             return attributeMap;
-        }
-
-        private void issueSaveEntityReferenceCopy(EntityDetail entityToAdd) throws ConnectorCheckedException {
-            String methodName = "issueSaveEntityReferenceCopy";
-
-            try {
-                metadataCollection.saveEntityReferenceCopy(
-                        userId,
-                        entityToAdd);
-            } catch (InvalidParameterException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
-            } catch (RepositoryErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
-            } catch (TypeErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-            } catch (PropertyErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e);
-//                } catch (ClassificationErrorException e) {
-//                    raiseConnectorCheckedException(FileOMRSErrorCode.CLASSIFICATION_ERROR_EXCEPTION, methodName, e);
-//                } catch (StatusNotSupportedException e) {
-//                    raiseConnectorCheckedException(FileOMRSErrorCode.STATUS_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
-            } catch (HomeEntityException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.HOME_ENTITY_ERROR_EXCEPTION, methodName, e);
-            } catch (EntityConflictException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_CONFLICT_ERROR_EXCEPTION, methodName, e);
-            } catch (InvalidEntityException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_ENTITY_ERROR_EXCEPTION, methodName, e);
-            } catch (FunctionNotSupportedException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
-            } catch (UserNotAuthorizedException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
-            }
-        }
-
-        private void createReferenceRelationship(String relationshipTypeName, String end1GUID, String end1TypeName, String end2GUID, String end2TypeName) throws ConnectorCheckedException {
-            String methodName = "createRelationship";
-
-
-            Relationship relationship = null;
-            try {
-                relationship = repositoryHelper.getSkeletonRelationship(methodName,
-                                                                        metadataCollectionId,
-                                                                        InstanceProvenanceType.LOCAL_COHORT,
-                                                                        userId,
-                                                                        relationshipTypeName);
-            } catch (TypeErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-            }
-
-            String connectionToAssetCanonicalName = end1GUID + "::" + relationshipTypeName + "::" + end2GUID;
-            String relationshipGUID = null;
-            try {
-                relationshipGUID = Base64.getUrlEncoder().encodeToString(connectionToAssetCanonicalName.getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.ENCODING_EXCEPTION, methodName, e, "connectionToAssetCanonicalName", connectionToAssetCanonicalName );
-            }
-
-            relationship.setGUID(relationshipGUID);
-            //end 1
-            EntityProxy entityProxy1 = getEntityProxySkeleton(end1GUID, end1TypeName);
-            relationship.setEntityOneProxy(entityProxy1);
-
-            //end 2
-            EntityProxy entityProxy2 = getEntityProxySkeleton(end2GUID, end2TypeName);
-            relationship.setEntityTwoProxy(entityProxy2);
-            try {
-                metadataCollection.saveRelationshipReferenceCopy(
-                        userId,
-                        relationship);
-            } catch (InvalidParameterException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_PARAMETER_EXCEPTION, methodName, e);
-            } catch (RepositoryErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.REPOSITORY_ERROR_EXCEPTION, methodName, e);
-            } catch (TypeErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
-            } catch (EntityNotKnownException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.ENTITY_NOT_KNOWN, methodName, e);
-            } catch (PropertyErrorException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.PROPERTY_ERROR_EXCEPTION, methodName, e);
-            } catch (HomeRelationshipException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.HOME_RELATIONSHIP_ERROR_EXCEPTION, methodName, e);
-            } catch (RelationshipConflictException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.RELATIONSHIP_CONFLICT_ERROR_EXCEPTION, methodName, e);
-            } catch (InvalidRelationshipException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.INVALID_RELATIONSHIP_ERROR_EXCEPTION, methodName, e);
-            } catch (FunctionNotSupportedException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.FUNCTION_NOT_SUPPORTED_ERROR_EXCEPTION, methodName, e);
-            } catch (UserNotAuthorizedException e) {
-                raiseConnectorCheckedException(FileOMRSErrorCode.USER_NOT_AUTHORIZED_EXCEPTION, methodName, e);
-            }
-
         }
 
         private EntityProxy getEntityProxySkeleton(String guid, String typeName) throws ConnectorCheckedException {
@@ -723,6 +696,41 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             }
         }
 
+        private void createReferenceRelationship(String relationshipTypeName, String end1GUID, String end1TypeName, String end2GUID, String end2TypeName) throws ConnectorCheckedException {
+            String methodName = "createRelationship";
+
+
+            Relationship relationship = null;
+            try {
+                relationship = repositoryHelper.getSkeletonRelationship(methodName,
+                        metadataCollectionId,
+                        InstanceProvenanceType.LOCAL_COHORT,
+                        userId,
+                        relationshipTypeName);
+            } catch (TypeErrorException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.TYPE_ERROR_EXCEPTION, methodName, e);
+            }
+
+            String connectionToAssetCanonicalName = end1GUID + "::" + relationshipTypeName + "::" + end2GUID;
+            String relationshipGUID = null;
+            try {
+                relationshipGUID = Base64.getUrlEncoder().encodeToString(connectionToAssetCanonicalName.getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                raiseConnectorCheckedException(FileOMRSErrorCode.ENCODING_EXCEPTION, methodName, e, "connectionToAssetCanonicalName", connectionToAssetCanonicalName );
+            }
+
+            relationship.setGUID(relationshipGUID);
+            //end 1
+            EntityProxy entityProxy1 = getEntityProxySkeleton(end1GUID, end1TypeName);
+            relationship.setEntityOneProxy(entityProxy1);
+
+            //end 2
+            EntityProxy entityProxy2 = getEntityProxySkeleton(end2GUID, end2TypeName);
+            relationship.setEntityTwoProxy(entityProxy2);
+            cachedRepositoryAccessor.saveRelationshipReferenceCopyToStore(relationship);
+
+        }
+
 
         private List<EntityDetail> getEntitiesByTypeGuid(String typeName) throws
                                                                           InvalidParameterException,
@@ -754,62 +762,4 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
             }
         }
     }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    synchronized public void disconnect() throws ConnectorCheckedException {
-        super.disconnect();
-        final String methodName = "disconnect";
-        pollingThread.stop();
-        auditLog.logMessage(methodName, FileOMRSAuditCode.EVENT_MAPPER_SHUTDOWN.getMessageDefinition(repositoryConnector.getServerName()));
-    }
-
-    /**
-     * Throws a ConnectorCheckedException based on the provided parameters.
-     *
-     * @param errorCode  the error code for the exception
-     * @param methodName the method name throwing the exception
-     * @param cause      the underlying cause of the exception (if any, otherwise null)
-     * @param params     any additional parameters for formatting the error message
-     * @throws ConnectorCheckedException always
-     */
-    private void raiseConnectorCheckedException(FileOMRSErrorCode errorCode, String methodName, Exception cause, String... params) throws ConnectorCheckedException {
-        if (cause == null) {
-            throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
-                                                this.getClass().getName(),
-                                                methodName);
-        } else {
-            throw new ConnectorCheckedException(errorCode.getMessageDefinition(params),
-                                                this.getClass().getName(),
-                                                methodName,
-                                                cause);
-        }
-    }
-
-    /**
-     * Throws a RepositoryErrorException using the provided parameters.
-     *
-     * @param errorCode  the error code for the exception
-     * @param methodName the name of the method throwing the exception
-     * @param cause      the underlying cause of the exception (or null if none)
-     * @param params     any parameters for formatting the error message
-     * @throws RepositoryErrorException always
-     */
-    private void raiseRepositoryErrorException(FileOMRSErrorCode errorCode, String methodName, Throwable cause, String... params) throws RepositoryErrorException {
-        if (cause == null) {
-            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                                               this.getClass().getName(),
-                                               methodName);
-        } else {
-            throw new RepositoryErrorException(errorCode.getMessageDefinition(params),
-                                               this.getClass().getName(),
-                                               methodName,
-                                               cause);
-        }
-    }
-
-
 }

@@ -17,7 +17,7 @@ if (System.getenv("CI")) {
 repositories {
     mavenCentral()
     maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
-    mavenLocal() // note - this may pick up modified classes from ~/.m2
+  //  mavenLocal() // note - this may pick up modified classes from ~/.m2
 }
 
 // ensures we pick up the very latest snapshots when built
@@ -32,7 +32,8 @@ ext.name = 'New Egeria code'
 description = 'New code for Egeria'
 
 ext {
-    egeriaversion = '3.8'
+    egeriaversion = '3.12'
+    cachingconnectorversion = '1.0-SNAPSHOT'
     slf4jVersion = '1.7.36'
     jacksonVersion = '2.13.2'
     jupiterVersion = '5.8.2'
@@ -47,22 +48,22 @@ dependencies {
     compileOnly "org.odpi.egeria:audit-log-framework:${egeriaversion}"
 
     // Needed for build and run
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    implementation "org.springframework:spring-core:${springwebVersion}"
-    implementation "org.junit.jupiter:junit-jupiter:${jupiterVersion}"
-    implementation "org.odpi.egeria:open-connector-framework:${egeriaversion}"
-    implementation "org.odpi.egeria:open-metadata-types:${egeriaversion}"
-    implementation "org.odpi.egeria:audit-log-framework:${egeriaversion}"
-    implementation "org.odpi.egeria:repository-services:${egeriaversion}"
-    implementation "org.odpi.egeria:repository-services-implementation:${egeriaversion}"
-    implementation "org.odpi.egeria:admin-services-api:${egeriaversion}"
-    implementation "org.odpi.egeria:connector-configuration-factory:${egeriaversion}"
-    implementation "org.odpi.egeria:repository-services-apis:${egeriaversion}"
-    implementation "org.odpi.egeria:admin-services-api:${egeriaversion}"
-    implementation "org.odpi.egeria:audit-log-framework:${egeriaversion}"
+    compileOnly "org.slf4j:slf4j-api:${slf4jVersion}"
+    compileOnly "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compileOnly "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    compileOnly "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    compileOnly "org.springframework:spring-core:${springwebVersion}"
+    compileOnly "org.junit.jupiter:junit-jupiter:${jupiterVersion}"
+    compileOnly "org.odpi.egeria:open-connector-framework:${egeriaversion}"
+    compileOnly "org.odpi.egeria:open-metadata-types:${egeriaversion}"
+    compileOnly "org.odpi.egeria:audit-log-framework:${egeriaversion}"
+    compileOnly "org.odpi.egeria:repository-services:${egeriaversion}"
+    compileOnly "org.odpi.egeria:admin-services-api:${egeriaversion}"
+    compileOnly "org.odpi.egeria:connector-configuration-factory:${egeriaversion}"
+    compileOnly "org.odpi.egeria:repository-services-apis:${egeriaversion}"
+    compileOnly "org.odpi.egeria:admin-services-api:${egeriaversion}"
+    compileOnly "org.odpi.egeria:audit-log-framework:${egeriaversion}"
+    compileOnly "org.odpi.egeria:egeria-connector-omrs-caching:${cachingconnectorversion}"
 
     // Only needed to compile test code
     testCompileOnly "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"

@@ -143,7 +143,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"class\": \"VirtualConnection\",\n    \"headerVersion\": 0,               \n    \"displayName\":\"OMRS Sample File Repository Connector\",\n    \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"8e29c4ae-cae4-11ec-9d64-0242ac120002\",\n               \"qualifiedName\":\"OMRS Sample File Repository Connector\",\n               \"displayName\":\"OMRS Sample File Repository Connector\",\n               \"description\":\"OMRS Sample File Repository Connector that issues calls to the file system.\",\n               \"connectorProviderClassName\":\"org.odpi.egeria.connectors.file.repositoryconnector.CachingOMRSRepositoryProxyConnectorProvider\"\n   },\n   \"embeddedConnections\":[\n      {\n         \"class\":\"EmbeddedConnection\",\n         \"headerVersion\":0,\n         \"position\":0,\n         \"displayName\":\"embedded in memory\",\n         \"embeddedConnection\":{\n            \"class\":\"Connection\",\n            \"headerVersion\":0,\n            \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"65cc9091-757f-4bcd-b937-426160be8bc2\",\n               \"qualifiedName\":\"Egeria:OMRSRepositoryConnector:InMemory\",\n               \"displayName\":\"In Memory OMRS Repository Connector\",\n               \"description\":\"Native open metadata repository connector that maps open metadata calls to a set of in memory hash maps - demo use only.\",\n               \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider\"\n            }\n         }\n      }\n   ]\n}\n"
+					"raw": "{\n    \"class\": \"VirtualConnection\",\n    \"headerVersion\": 0,\n    \"displayName\": \"OMRS Caching Repository Connector\",\n    \"connectorType\": {\n        \"class\": \"ConnectorType\",\n        \"headerVersion\": 0,\n        \"type\": {\n            \"class\": \"ElementType\",\n            \"headerVersion\": 0,\n            \"elementOrigin\": \"LOCAL_COHORT\",\n            \"elementVersion\": 0,\n            \"elementTypeId\": \"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n            \"elementTypeName\": \"ConnectorType\",\n            \"elementTypeVersion\": 1,\n            \"elementTypeDescription\": \"A set of properties describing a type of connector.\"\n        },\n        \"guid\": \"41a30f1e-4dad-461b-a21c-eacabb4016cc\",\n        \"qualifiedName\": \"Egeria:OMRSRepositoryConnector:Cached\",\n        \"displayName\": \"OMRS Caching Repository Connector\",\n        \"description\": \" The OMRS caching Repository Connector provides a simple repository implementation that caches metadata in an embedded repository connector.\",\n        \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.caching.repositoryconnector.CachingOMRSRepositoryProxyConnectorProvider\"\n   },\n   \"embeddedConnections\":[\n      {\n         \"class\":\"EmbeddedConnection\",\n         \"headerVersion\":0,\n         \"position\":0,\n         \"displayName\":\"embedded in memory\",\n         \"embeddedConnection\":{\n            \"class\":\"Connection\",\n            \"headerVersion\":0,\n            \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"65cc9091-757f-4bcd-b937-426160be8bc2\",\n               \"qualifiedName\":\"Egeria:OMRSRepositoryConnector:InMemory\",\n               \"displayName\":\"In Memory OMRS Repository Connector\",\n               \"description\":\"Native open metadata repository connector that maps open metadata calls to a set of in memory hash maps - demo use only.\",\n               \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider\"\n            }\n         }\n      }\n   ]\n}\n"
 				},
 				"url": {
 					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/local-repository/mode/repository-proxy/connection",
@@ -185,7 +185,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"class\": \"VirtualConnection\",\n    \"headerVersion\": 0,               \n    \"displayName\":\"OMRS Sample File Repository Connector\",\n    \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"8e29c4ae-cae4-11ec-9d64-0242ac120002\",\n               \"qualifiedName\":\"OMRS Sample File Repository Connector\",\n               \"displayName\":\"OMRS Sample File Repository Connector\",\n               \"description\":\"OMRS Sample File Repository Connector that issues calls to the file system.\",\n                \"connectorProviderClassName\": \"org.odpi.egeria.connectors.juxt.crux.repositoryconnector.CruxOMRSRepositoryConnectorProvider\"\n   },\n   \"embeddedConnections\":[\n      {\n         \"class\":\"EmbeddedConnection\",\n         \"headerVersion\":0,\n         \"position\":0,\n         \"displayName\":\"embedded in memory\",\n         \"embeddedConnection\":{\n            \"class\":\"Connection\",\n            \"headerVersion\":0,\n            \"connectorType\":{\n               \"class\":\"ConnectorType\",\n               \"headerVersion\":0,\n               \"type\":{\n                  \"class\":\"ElementType\",\n                  \"headerVersion\":0,\n                  \"elementOrigin\":\"LOCAL_COHORT\",\n                  \"elementVersion\":0,\n                  \"elementTypeId\":\"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n                  \"elementTypeName\":\"ConnectorType\",\n                  \"elementTypeVersion\":1,\n                  \"elementTypeDescription\":\"A set of properties describing a type of connector.\"\n               },\n               \"guid\":\"65cc9091-757f-4bcd-b937-426160be8bc2\",\n               \"qualifiedName\":\"Egeria:OMRSRepositoryConnector:InMemory\",\n               \"displayName\":\"In Memory OMRS Repository Connector\",\n               \"description\":\"Native open metadata repository connector that maps open metadata calls to a set of in memory hash maps - demo use only.\",\n               \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.inmemory.repositoryconnector.InMemoryOMRSRepositoryConnectorProvider\"\n            }\n         }\n      }\n   ]\n}\n"
+					"raw": "{\n    \"class\": \"VirtualConnection\",\n    \"headerVersion\": 0,\n    \"displayName\": \"OMRS Caching Repository Connector\",\n    \"connectorType\": {\n        \"class\": \"ConnectorType\",\n        \"headerVersion\": 0,\n        \"type\": {\n            \"class\": \"ElementType\",\n            \"headerVersion\": 0,\n            \"elementOrigin\": \"LOCAL_COHORT\",\n            \"elementVersion\": 0,\n            \"elementTypeId\": \"954421eb-33a6-462d-a8ca-b5709a1bd0d4\",\n            \"elementTypeName\": \"ConnectorType\",\n            \"elementTypeVersion\": 1,\n            \"elementTypeDescription\": \"A set of properties describing a type of connector.\"\n        },\n        \"guid\": \"41a30f1e-4dad-461b-a21c-eacabb4016cc\",\n        \"qualifiedName\": \"Egeria:OMRSRepositoryConnector:Cached\",\n        \"displayName\": \"OMRS Caching Repository Connector\",\n        \"description\": \" The OMRS caching Repository Connector provides a simple repository implementation that caches metadata in an embedded repository connector.\",\n        \"connectorProviderClassName\":\"org.odpi.openmetadata.adapters.repositoryservices.caching.repositoryconnector.CachingOMRSRepositoryProxyConnectorProvider\"\n   },\n   \"embeddedConnections\":[\n      {\n         \"class\":\"EmbeddedConnection\",\n         \"headerVersion\":0,\n         \"position\":0,\n         \"displayName\":\"embedded XTDB store\",\n         \"embeddedConnection\":{  \n           \"class\": \"Connection\",\n               \"connectorType\": {\n                  \"class\": \"ConnectorType\",\n                  \"connectorProviderClassName\": \"org.odpi.egeria.connectors.juxt.xtdb.repositoryconnector.XtdbOMRSRepositoryConnectorProvider\"\n               }\n         }\n      }\n   ]\n}\n"
 				},
 				"url": {
 					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}/local-repository/mode/repository-proxy/connection",
@@ -210,7 +210,7 @@
 			"response": []
 		},
 		{
-			"name": "5. Configure a local repository event mapper connection Copy",
+			"name": "5. Configure a local repository event mapper connection",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -250,7 +250,7 @@
 			"response": []
 		},
 		{
-			"name": "6. Start the cocoFile instance",
+			"name": "6. Start the  instance",
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -278,7 +278,7 @@
 			"response": []
 		},
 		{
-			"name": "7. Retrieve the updated configuration for the cocofile",
+			"name": "7. Retrieve the updated configuration",
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -300,6 +300,85 @@
 				"description": "Requests information about the author of the server platform."
 			},
 			"response": []
+		},
+		{
+			"name": "delete the instance",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{baseURL}}/open-metadata/admin-services/users/{{user}}/servers/{{server}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"open-metadata",
+						"admin-services",
+						"users",
+						"{{user}}",
+						"servers",
+						"{{server}}"
+					]
+				},
+				"description": "Requests information about the author of the server platform."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "server",
+			"value": "cocofile",
+			"type": "string"
+		},
+		{
+			"key": "user",
+			"value": "garygeeke",
+			"type": "string"
+		},
+		{
+			"key": "baseURL",
+			"value": "https://localhost:9443",
+			"type": "string"
+		},
+		{
+			"key": "folderpathtomonitor",
+			"value": "/Users/davidradley/test",
+			"type": "string"
+		},
+		{
+			"key": "qualifiedNamePrefix",
+			"value": "testprefix1",
+			"type": "string"
+		},
+		{
+			"key": "refreshTimeInterval",
+			"value": "1",
+			"type": "string"
 		}
 	]
 }
