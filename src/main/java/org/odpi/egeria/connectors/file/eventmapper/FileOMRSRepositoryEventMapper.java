@@ -114,7 +114,8 @@ public class FileOMRSRepositoryEventMapper extends OMRSRepositoryEventMapperBase
         if (endpointProperties == null) {
             raiseRepositoryErrorException(FileOMRSErrorCode.FOLDER_NOT_SUPPLIED_IN_CONFIG, methodName, null, "null");
         } else {
-            setFolderLocation(endpointProperties.getAddress());
+            String folderName =endpointProperties.getAddress();
+            setFolderLocation(folderName);
             metadataCollection = this.repositoryConnector.getMetadataCollection();
             if (this.userId == null) {
                 // default
