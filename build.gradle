@@ -38,7 +38,7 @@ ext {
     jacksonVersion = '2.13.2'
     jupiterVersion = '5.8.2'
     httpclientVersion = '4.5.13'
-    springwebVersion = '5.3.19'
+    springwebVersion = '6.0.2'
 }
 
 // For a single module, add here. For multiple modules, refactor and use constraints (see main egeria build.gradle for an example)
