@@ -32,7 +32,7 @@ ext.name = 'New Egeria code'
 description = 'New code for Egeria'
 
 ext {
-    egeriaversion = '3.12'
+    egeriaversion = '3.15'
     cachingconnectorversion = '1.0-SNAPSHOT'
     slf4jVersion = '1.7.36'
     jacksonVersion = '2.13.2'
