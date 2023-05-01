@@ -33,7 +33,7 @@ description = 'New code for Egeria'
 
 ext {
     egeriaversion = '3.12'
-    cachingconnectorversion = '1.0-SNAPSHOT'
+    cachingconnectorversion = '1.2-SNAPSHOT'
     slf4jVersion = '1.7.36'
     jacksonVersion = '2.13.2'
     jupiterVersion = '5.8.2'
