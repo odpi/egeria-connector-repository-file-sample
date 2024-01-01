@@ -37,7 +37,7 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
       # Upload the library so that build results can be viewed
       - name: Upload Connector
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Jar
           path: '**/build/libs/*.jar'
